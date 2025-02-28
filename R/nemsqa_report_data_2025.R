@@ -1,5 +1,8 @@
 ### IOWA NEMSQAR REPORT 2025 ###################################################
 
+# This script prepares for the analyses using the `nemsqar` package in the
+#
+
 ###_____________________________________________________________________________
 ### PACKAGES ----
 ###_____________________________________________________________________________
@@ -23,10 +26,461 @@ library(gtsummary)
 library(gtExtras)
 library(zipcodeR)
 
-# get a few handy functions
-source(file = "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Desktop/Analytics/Analytics Builds/GitHub/Out-of-Hospital-Indicators/clean_county_names_1.r")
+# Handy Functions ----
 
-source(file = "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Desktop/Analytics/Analytics Builds/GitHub/Out-of-Hospital-Indicators/clean_county_names_2.r")
+###_____________________________________________________________________________
+# After observing the different problems with Iowa counties, we can
+# clean these county names so they are uniform and spelled correctly using
+# regex within a custom map() function
+# add nature of injury data
+###_____________________________________________________________________________
+
+# clean county names, second part of the ems data analysis workflow
+
+clean_county_names_1 <-
+  function(df,
+           county_column,
+           city_column,
+           zip_column) {
+
+    # let x be a named column within a data.frame
+
+
+    if (!is.data.frame(df) && !is_tibble(df)) {
+
+      cli::cli_abort(
+        "The first argument `df` of the input was of class {.cls {class(df)}}but must be a {.cls data.frame}.  Please supply a {.cls data.frame} to the argument {.var df}."
+      )
+
+    }
+
+    clean_counties <- df |>
+      dplyr::mutate({
+        {
+          county_column
+        }
+      } := str_remove_all({
+        {
+          county_column
+        }
+      }, pattern = "(?:\\sCounty|\\scounty|/.*$|\\sCo$)"),
+      {
+        {
+          county_column
+        }
+      } := str_to_title({
+        {
+          county_column
+        }
+      })) |>
+      dplyr::mutate({
+        {
+          county_column
+        }
+      } := dplyr::if_else(
+        grepl(pattern = "(?:Al[l]*am[a]*kee)", {
+          {
+            county_column
+          }
+        }, ignore.case = TRUE),
+        "Allamakee",
+        # using various regex formulations to address mispellings to standardize county
+        dplyr::if_else(
+          grepl(pattern = "(?:[0-9]+)", {
+            {
+              county_column
+            }
+          }, ignore.case = TRUE),
+          new_county,
+          dplyr::if_else(
+            grepl(
+              pattern = "waterloo",
+              x = {
+                {
+                  city_column
+                }
+              },
+              ignore.case = TRUE
+            ),
+            "Black Hawk",
+            dplyr::if_else(
+              grepl(
+                pattern = "saint clair",
+                x = {
+                  {
+                    city_column
+                  }
+                },
+                ignore.case = TRUE
+              ),
+              "Benton",
+              dplyr::if_else(
+                grepl(pattern = "(?:Audrain)", {
+                  {
+                    county_column
+                  }
+                }, ignore.case = TRUE),
+                new_county,
+                dplyr::if_else(
+                  grepl(pattern = "(?:Blair)", {
+                    {
+                      county_column
+                    }
+                  }, ignore.case = TRUE),
+                  new_county,
+                  dplyr::if_else(
+                    grepl(
+                      pattern = "evansdale",
+                      x = {
+                        {
+                          city_column
+                        }
+                      },
+                      ignore.case = TRUE
+                    ),
+                    "Black Hawk",
+                    dplyr::if_else(
+                      grepl(pattern = "(?:Buchan[ao]n)", {
+                        {
+                          county_column
+                        }
+                      }, ignore.case = TRUE),
+                      "Buchanan",
+                      dplyr::if_else(
+                        grepl(
+                          pattern = "iowa city",
+                          x = {
+                            {
+                              city_column
+                            }
+                          },
+                          ignore.case = TRUE
+                        ),
+                        "Johnson",
+                        dplyr::if_else(
+                          grepl(pattern = "(?:Clay[r]*ton)", {
+                            {
+                              county_column
+                            }
+                          }, ignore.case = TRUE),
+                          "Clayton",
+                          dplyr::if_else(
+                            grepl(pattern = "(?:Del[ae]*ware)", {
+                              {
+                                county_column
+                              }
+                            }, ignore.case = TRUE),
+                            "Delaware",
+                            dplyr::if_else(
+                              grepl(pattern = "(?:di[ck]*[a-z]+(osn|son|non))", {
+                                {
+                                  county_column
+                                }
+                              }, ignore.case = TRUE),
+                              "Dickinson",
+                              dplyr::if_else(
+                                grepl(pattern = "(?:green[e]*)", {
+                                  {
+                                    county_column
+                                  }
+                                }, ignore.case = TRUE),
+                                "Greene",
+                                dplyr::if_else(
+                                  grepl(
+                                    pattern = "saylor",
+                                    x = {
+                                      {
+                                        city_column
+                                      }
+                                    },
+                                    ignore.case = TRUE
+                                  ),
+                                  "Polk",
+                                  dplyr::if_else(
+                                    grepl(pattern = "(?:^ia$)", {
+                                      {
+                                        county_column
+                                      }
+                                    }, ignore.case = TRUE),
+                                    new_county,
+                                    dplyr::if_else(
+                                      grepl(pattern = "clinton", {
+                                        {
+                                          city_column
+                                        }
+                                      }, ignore.case = TRUE),
+                                      "Clinton",
+                                      dplyr::if_else(
+                                        grepl(pattern = "(?:indianola)", {
+                                          {
+                                            city_column
+                                          }
+                                        }, ignore.case = TRUE),
+                                        "Warren",
+                                        dplyr::if_else(
+                                          grepl(pattern = "(?:jo(n|h)(hson|hnson|nson|oson|son))", {
+                                            {
+                                              county_column
+                                            }
+                                          }, ignore.case = TRUE),
+                                          "Johnson",
+                                          dplyr::if_else(
+                                            grepl(pattern = "(?:Kewaunee)", {
+                                              {
+                                                county_column
+                                              }
+                                            }, ignore.case = TRUE),
+                                            new_county,
+                                            dplyr::if_else(
+                                              grepl(pattern = "(?:mar[r]*ion)", {
+                                                {
+                                                  county_column
+                                                }
+                                              }, ignore.case = TRUE),
+                                              "Marion",
+                                              dplyr::if_else(
+                                                grepl(pattern = "(?:o[']*brien)", {
+                                                  {
+                                                    county_column
+                                                  }
+                                                }, ignore.case = TRUE),
+                                                "O'Brien",
+                                                dplyr::if_else(
+                                                  grepl(pattern = "(?:wesley|Algona)", {
+                                                    {
+                                                      city_column
+                                                    }
+                                                  }, ignore.case = TRUE),
+                                                  "Kossuth",
+                                                  dplyr::if_else(
+                                                    grepl(pattern = "(?:Iowa City)", {
+                                                      {
+                                                        city_column
+                                                      }
+                                                    }, ignore.case = TRUE),
+                                                    "Johnson",
+                                                    dplyr::if_else(
+                                                      grepl(pattern = "(?:poc[h]*ahontas)", {
+                                                        {
+                                                          county_column
+                                                        }
+                                                      }, ignore.case = TRUE),
+                                                      "Pocahontas",
+                                                      dplyr::if_else(
+                                                        grepl(pattern = "(?:altoona)", {
+                                                          {
+                                                            city_column
+                                                          }
+                                                        }, ignore.case = TRUE),
+                                                        "Polk",
+                                                        dplyr::if_else(
+                                                          grepl(pattern = "(?:Council Bluffs)", {
+                                                            {
+                                                              city_column
+                                                            }
+                                                          }, ignore.case = TRUE),
+                                                          "Pottawattamie",
+                                                          dplyr::if_else(
+                                                            grepl(pattern = "(?:Iowa Falls)", {
+                                                              {
+                                                                city_column
+                                                              }
+                                                            }, ignore.case = TRUE),
+                                                            "Hardin",
+                                                            dplyr::if_else(
+                                                              grepl(pattern = "(?:des moines|urbandale|ankeny)", {
+                                                                {
+                                                                  city_column
+                                                                }
+                                                              }, ignore.case = TRUE),
+                                                              "Polk",
+                                                              dplyr::if_else(
+                                                                grepl(pattern = "(?:van bur[r]*en)", {
+                                                                  {
+                                                                    county_column
+                                                                  }
+                                                                }, ignore.case = TRUE),
+                                                                "Van Buren",
+                                                                dplyr::if_else(
+                                                                  grepl(pattern = "(?:war[nr]en)", {
+                                                                    {
+                                                                      county_column
+                                                                    }
+                                                                  }, ignore.case = TRUE),
+                                                                  "Warren",
+                                                                  dplyr::if_else(
+                                                                    grepl(pattern = "(?:essex)", {
+                                                                      {
+                                                                        city_column
+                                                                      }
+                                                                    }, ignore.case = TRUE),
+                                                                    "Page",
+                                                                    dplyr::if_else(
+                                                                      grepl(pattern = "(?:all[a]*makee)", {
+                                                                        {
+                                                                          county_column
+                                                                        }
+                                                                      }, ignore.case = TRUE),
+                                                                      "Allamakee",
+                                                                      dplyr::if_else(
+                                                                        grepl(pattern = "(?:m[ao]nona)", {
+                                                                          {
+                                                                            county_column
+                                                                          }
+                                                                        }, ignore.case = TRUE),
+                                                                        "Monona",
+                                                                        dplyr::if_else(
+                                                                          grepl(pattern = "(?:story)", {
+                                                                            {
+                                                                              county_column
+                                                                            }
+                                                                          }, ignore.case = TRUE),
+                                                                          "Story",
+                                                                          dplyr::if_else(
+                                                                            grepl(pattern = "(?:[^a-z]+[0-9]+)", {
+                                                                              {
+                                                                                county_column
+                                                                              }
+                                                                            }, ignore.case = TRUE),
+                                                                            new_county,
+                                                                            dplyr::if_else(
+                                                                              grepl(pattern = "(?:51012)", {
+                                                                                {
+                                                                                  zip_column
+                                                                                }
+                                                                              }, ignore.case = TRUE),
+                                                                              "Cherokee",
+                                                                              dplyr::if_else(
+                                                                                grepl(pattern = "(?:mingo)", {
+                                                                                  {
+                                                                                    county_column
+                                                                                  }
+                                                                                }, ignore.case = TRUE),
+                                                                                "Jasper",
+                                                                                dplyr::if_else(
+                                                                                  grepl(pattern = "(?:norwalk)", {
+                                                                                    {
+                                                                                      county_column
+                                                                                    }
+                                                                                  }, ignore.case = TRUE),
+                                                                                  "Warren",
+                                                                                  dplyr::if_else(
+                                                                                    grepl(pattern = "(?:elkhart)", {
+                                                                                      {
+                                                                                        county_column
+                                                                                      }
+                                                                                    }, ignore.case = TRUE),
+                                                                                    "Polk",
+                                                                                    dplyr::if_else({
+                                                                                      {
+                                                                                        county_column
+                                                                                      }
+                                                                                    } == "County", new_county,
+                                                                                    dplyr::if_else({
+                                                                                      {
+                                                                                        county_column
+                                                                                      }
+                                                                                    } == "Grant", "Montgomery",
+                                                                                    dplyr::if_else({
+                                                                                      {
+                                                                                        county_column
+                                                                                      }
+                                                                                    } == "Burt", "Kossuth",
+                                                                                    dplyr::if_else({
+                                                                                      {
+                                                                                        county_column
+                                                                                      }
+                                                                                    } == "Carlisle", "Warren",
+                                                                                    dplyr::if_else({
+                                                                                      {
+                                                                                        zip_column
+                                                                                      }
+                                                                                    } == "52358", "Cedar",
+                                                                                    dplyr::if_else({
+                                                                                      {
+                                                                                        county_column
+                                                                                      }
+                                                                                    } == "Fulton", "Jackson", {
+                                                                                      {
+                                                                                        county_column
+                                                                                      }
+                                                                                    }
+                                                                                    ))))))
+                                                                                  )
+                                                                                )
+                                                                              )
+                                                                            )
+                                                                          )
+                                                                        )
+                                                                      )
+                                                                    )
+                                                                  )
+                                                                )
+                                                              )
+                                                            )
+                                                          )
+                                                        )
+                                                      )
+                                                    )
+                                                  )
+                                                )
+                                              )
+                                            )
+                                          )
+                                        )
+                                      )
+                                    )
+                                  )
+                                )
+                              )
+                            )
+                          )
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        )
+      ))
+
+    return(clean_counties)
+
+  }
+
+# clean county names, still the second part but have to start a new one
+# due to if_else() breaking after so many nested statements
+
+clean_county_names_2 <-
+  function(df,
+           county_column,
+           zip_column) {
+    # let x be a named column within a data.frame
+
+
+    if (!is.data.frame(df) && !is_tibble(df)) {
+
+      cli::cli_abort(
+        "The first argument `df` of the input was of class {.cls {class(df)}}but must be a {.cls data.frame}.  Please supply a {.cls data.frame} to the argument {.var df}."
+      )
+
+    }
+
+    clean_counties <- df |>
+      dplyr::mutate({{ county_column }} :=
+                      dplyr::case_when(
+                        grepl(pattern = "harrision|harison", {{ county_column }}, ignore.case = TRUE) ~ "Harrison",
+                        grepl(pattern = "50125", {{ zip_column }}, ignore.case = TRUE) ~ "Warren",
+                        grepl(pattern = "51546", {{ zip_column }}, ignore.case = TRUE) ~ "Harrison",
+                        TRUE ~ {{ county_column }}
+                      )
+      )
+
+    return(clean_counties)
+  }
+
 
 # get location data
 # Iowa county data
@@ -86,11 +540,11 @@ clean_names_dates_data <- function(df) {
     janitor::clean_names(case = "screaming_snake", sep_out = "_") |>
     dplyr::mutate(
 
-      across(matches("date(?!.*time)", perl = TRUE), ~ lubridate::mdy(
+      dplyr::across(matches("date(?!.*time)", perl = TRUE), ~ lubridate::mdy(
         stringr::str_remove_all(string = ., pattern = "\\s\\d+:\\d+(?::\\d+)?\\s[AP]M$")
       )),
 
-      across(matches("date(?=.*time)", perl = TRUE), ~ lubridate::mdy_hms(
+      dplyr::across(matches("date(?=.*time)", perl = TRUE), ~ lubridate::mdy_hms(
         stringr::str_remove_all(string = ., pattern = "\\s[AP]M$")
       )),
       UNIQUE_EPCR_NUMBER = dplyr::if_else(!is.na(INCIDENT_DATE_TIME),
@@ -108,6 +562,15 @@ clean_names_dates_data <- function(df) {
                                      INCIDENT_PATIENT_CARE_REPORT_NUMBER_PCR_E_RECORD_01,
                                      INCIDENT_DATE)
                                      )
+    ) |>
+    dplyr::mutate(
+      INCIDENT_YEAR = lubridate::year(INCIDENT_DATE),
+      INCIDENT_CY_QUARTER = lubridate::quarter(INCIDENT_DATE),
+      INCIDENT_MONTH = lubridate::month(INCIDENT_DATE, label = FALSE),
+      INCIDENT_DAY = weekdays(INCIDENT_DATE, abbreviate = FALSE),
+      INCIDENT_WEEK_PART = traumar::weekend(INCIDENT_DATE),
+      INCIDENT_SEASON = traumar::season(INCIDENT_DATE),
+      .before = INCIDENT_DATE
       ) |>
     dplyr::filter(
       AGENCY_IS_DEMO_SERVICE == FALSE,
@@ -177,24 +640,97 @@ disposition_table <- disposition_rbind |>
   clean_names_dates_data()
 
 # exam tables ----
+# handle the exam tables differently due to size
+# workflow will change from going through the dplyr::bind_rows() set to
+# manipulations to manipulations before dplyr::bind_rows()
+# import and clean each file
+# break up the 2024 file into its 2 month parts (6) and clean each
+# then bind all together at the end
+
+# 2021
 exam_2021 <- import_nemsqa_data(table = "exam", year = 2021)
-exam_2022 <- import_nemsqa_data(table = "exam", year = 2022)
-exam_2023 <- import_nemsqa_data(table = "exam", year = 2023)
-exam_2024 <- import_nemsqa_data(table = "exam", year = 2024)
 
-# bind rows for the exam table
-exam_rbind <- dplyr::bind_cols(exam_2021,
-                                 exam_2022,
-                                 exam_2023,
-                                 exam_2024
-                                 )
-
-# set up the exam table for manipulations
-exam_table <- exam_rbind |>
+exam_2021_clean <- exam_2021 |>
   clean_names_dates_data()
 
+# 2022
+exam_2022 <- import_nemsqa_data(table = "exam", year = 2022)
+
+exam_2022_clean <- exam_2022 |>
+  clean_names_dates_data()
+
+# 2023
+exam_2023 <- import_nemsqa_data(table = "exam", year = 2023)
+
+exam_2023_clean <- exam_2023 |>
+  clean_names_dates_data()
+
+# 2024 is broken up into several tables due to its size, ~ 40m rows
+
+# 2024 jan-feb
+exam_2024_1 <- import_nemsqa_data(table = "exam", year = "2024_1")
+
+exam_2024_1_clean <- exam_2024_1 |>
+  clean_names_dates_data()
+
+# 2024 mar-apr
+exam_2024_2 <- import_nemsqa_data(table = "exam", year = "2024_2")
+
+exam_2024_2_clean <- exam_2024_2 |>
+  clean_names_dates_data()
+
+# 2024 may-june
+exam_2024_3 <- import_nemsqa_data(table = "exam", year = "2024_3")
+
+exam_2024_3_clean <- exam_2024_3 |>
+  clean_names_dates_data()
+
+# 2024 july-aug
+exam_2024_4 <- import_nemsqa_data(table = "exam", year = "2024_4")
+
+exam_2024_4_clean <- exam_2024_4 |>
+  clean_names_dates_data()
+
+# 2024 sept-oct
+exam_2024_5 <- import_nemsqa_data(table = "exam", year = "2024_5")
+
+exam_2024_5_clean <- exam_2024_5 |>
+  clean_names_dates_data()
+
+# 2024 nov-dec
+exam_2024_6 <- import_nemsqa_data(table = "exam", year = "2024_6")
+
+exam_2024_6_clean <- exam_2024_6 |>
+  clean_names_dates_data()
+
+# bind rows for the exam table
+exam_table <- dplyr::bind_rows(exam_2021_clean,
+                               exam_2022_clean,
+                               exam_2023_clean,
+                               exam_2024_1_clean,
+                               exam_2024_2_clean,
+                               exam_2024_3_clean,
+                               exam_2024_4_clean,
+                               exam_2024_5_clean,
+                               exam_2024_6_clean
+                               )
+
 # injury tables ----
-injury_2021
+injury_2021 <- import_nemsqa_data(table = "injury", year = 2021)
+injury_2022 <- import_nemsqa_data(table = "injury", year = 2022)
+injury_2023 <- import_nemsqa_data(table = "injury", year = 2023)
+injury_2024 <- import_nemsqa_data(table = "injury", year = 2024)
+
+# bind rows for the injury table
+injury_rbind <- dplyr::bind_rows(injury_2021,
+                                 injury_2022,
+                                 injury_2023,
+                                 injury_2024
+                                 )
+
+# set up the injury table for manipulations
+injury_table <- injury_rbind |>
+  clean_names_dates_data()
 
 # medications tables ----
 
@@ -259,9 +795,69 @@ patient_scene_table <- patient_scene_clean |>
                        )
 
 # procedures tables ----
+procedures_2021 <- import_nemsqa_data(table = "procedures", year = 2021)
+procedures_2022 <- import_nemsqa_data(table = "procedures", year = 2022)
+procedures_2023 <- import_nemsqa_data(table = "procedures", year = 2023)
+procedures_2024 <- import_nemsqa_data(table = "procedures", year = 2024)
+
+# bind rows for the procedures table
+procedures_rbind <- dplyr::bind_rows(procedures_2021,
+                                     procedures_2022,
+                                     procedures_2023,
+                                     procedures_2024
+                                     )
+
+# set up procedures table for manipulations
+procedures_table <- procedures_rbind |>
+  clean_names_dates_data()
 
 # response tables ----
+response_2021 <- import_nemsqa_data(table = "response", year = 2021)
+response_2022 <- import_nemsqa_data(table = "response", year = 2022)
+response_2023 <- import_nemsqa_data(table = "response", year = 2023)
+response_2024 <- import_nemsqa_data(table = "response", year = 2024)
+
+# bind rows for the response table
+response_rbind <- dplyr::bind_rows(response_2021,
+                                     response_2022,
+                                     response_2023,
+                                     response_2024
+                                   )
+
+# set up response table for manipulations
+response_table <- response_rbind |>
+  clean_names_dates_data()
 
 # situation tables ----
+situation_2021 <- import_nemsqa_data(table = "situation", year = 2021)
+situation_2022 <- import_nemsqa_data(table = "situation", year = 2022)
+situation_2023 <- import_nemsqa_data(table = "situation", year = 2023)
+situation_2024 <- import_nemsqa_data(table = "situation", year = 2024)
+
+# bind rows for the situation table
+situation_rbind <- dplyr::bind_rows(situation_2021,
+                                   situation_2022,
+                                   situation_2023,
+                                   situation_2024
+                                   )
+
+# set up situation table for manipulations
+situation_table <- situation_rbind |>
+  clean_names_dates_data()
 
 # vitals tables ----
+vitals_2021 <- import_nemsqa_data(table = "vitals", year = 2021)
+vitals_2022 <- import_nemsqa_data(table = "vitals", year = 2022)
+vitals_2023 <- import_nemsqa_data(table = "vitals", year = 2023)
+vitals_2024 <- import_nemsqa_data(table = "vitals", year = 2024)
+
+# bind rows for the vitals table
+vitals_rbind <- dplyr::bind_rows(vitals_2021,
+                                    vitals_2022,
+                                    vitals_2023,
+                                    vitals_2024
+)
+
+# set up vitals table for manipulations
+vitals_table <- vitals_rbind |>
+  clean_names_dates_data()

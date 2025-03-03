@@ -1,7 +1,6 @@
-### IOWA NEMSQAR REPORT 2025 ###################################################
+### IOWA NEMSQAR REPORT DATA 2025 ##############################################
 
 # This script prepares for the analyses using the `nemsqar` package in the
-#
 
 ###_____________________________________________________________________________
 ### PACKAGES ----
@@ -9,7 +8,9 @@
 
 # CRAN versions ----
 # install.packages(c("tidyverse", "traumar", "devtools", "remotes", "janitor",
-#                    "gt", "gtsummary", "gtExtras", "zipcodeR"))
+#                    "gt", "gtsummary", "gtExtras", "zipcodeR", "naniar",
+#                    "ggrepel"
+#                   ))
 
 # dev version of `nemsqar` ----
 # remotes::install_github("bemts-hhs/nemsqar")
@@ -25,6 +26,8 @@ library(gt)
 library(gtsummary)
 library(gtExtras)
 library(zipcodeR)
+library(naniar)
+library(ggrepel)
 
 # Handy Functions ----
 
@@ -733,6 +736,21 @@ injury_table <- injury_rbind |>
   clean_names_dates_data()
 
 # medications tables ----
+medications_2021 <- import_nemsqa_data(table = "medications", year = 2021)
+medications_2022 <- import_nemsqa_data(table = "medications", year = 2022)
+medications_2023 <- import_nemsqa_data(table = "medications", year = 2023)
+medications_2024 <- import_nemsqa_data(table = "medications", year = 2024)
+
+# bind rows for the medications table
+medications_rbind <- dplyr::bind_rows(medications_2021,
+                                      medications_2022,
+                                      medications_2023,
+                                      medications_2024
+                                      )
+
+# set up the medications table for manipulations
+medications_table <- medications_rbind |>
+  clean_names_dates_data()
 
 # patient/scene tables ----
 # given that patient and scene data are 1-1 relationship, join those tables

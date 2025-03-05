@@ -37,58 +37,140 @@ library(ggrepel)
 ###_____________________________________________________________________________
 
 # confidence interval function
+binomial_confint <- function(data,
+                             x,
+                             n,
+                             method = c("wilson", "agresti-coull",
+                                        "clopper-pearson", "wald"),
+                             conf.level = 0.95,
+                             correct = TRUE,
+                             ac_method = c("z", "add_two")) {
 
-confint_prop <- function(x, n, method = c("wald", "agresti-coull", "wilson", "clopper-pearson"),
-                         conf.level = 0.95, correct = TRUE, ac_method = "z") {
-
+  # Set default method and adjustment method
   method <- match.arg(method)
+  ac_method <- match.arg(ac_method)
+
+  # If the user passes a tibble or data.frame
+  if(!is.null(data)) {
+
+  # Extract values of the specified columns using the provided data
+  x <- data |> pull({{x}})
+  n <- data |> pull({{n}})
+
+  }
+
+  # Initialize lower and upper CI bounds
+  lower <- numeric()
+  upper <- numeric()
 
   # Wald Interval
   if (method == "wald") {
     p <- x / n
     se <- sqrt(p * (1 - p) / n)
-    z <- qnorm(c((1 - conf.level) / 2, 1 - (1 - conf.level) / 2))
-    ci <- p + z * se
+    z <- qnorm((1 + conf.level) / 2)
+    lower <- p - z * se
+    upper <- p + z * se
+  }
+
+  # Poisson Confidence Interval (for count data)
+  if (method == "poisson") {
+    ci <- Vectorize(function(x) {
+      poisson.test(x, conf.level = conf.level)$conf.int
+    }, vectorize.args = "x")(x)
+
+    lower <- ci[1, ] / n  # Convert back to proportion (CI per `n`)
+    upper <- ci[2, ] / n
   }
 
   # Agresti-Coull Interval
+  # Accoring to Agresti & Coull (1998)
   if (method == "agresti-coull") {
-    if (ac_method == "add") {
-      x_adj <- x + 2
-      n_adj <- n + 4
+
+    # Adjust x and n values if the "add_two" method is selected
+    if (ac_method == "add_two") {
+      x_adj <- x + 2  # Add 2 successes
+      n_adj <- n + 4  # Add 2 failures (4 trials)
     } else {
-      x_adj <- x
-      n_adj <- n
+      x_adj <- x  # No adjustment
+      n_adj <- n  # No adjustment
     }
+
+    # Calculate proportion with adjusted values
     p <- x_adj / n_adj
+
+    # Standard error estimate
     se <- sqrt(p * (1 - p) / n_adj)
 
-    if (ac_method == "z") {
-      z <- 2  # As per Brown, Cai, & DasGupta (2001)
-    } else {
-      z <- qnorm(c((1 - conf.level) / 2, 1 - (1 - conf.level) / 2))
-    }
+    # Z value for confidence interval calculation
+    # Based on Brown, Cai, & DasGupta (2001)
+    z <- ifelse(ac_method == "z", 2, qnorm((1 + conf.level) / 2))
 
-    ci <- p + z * se
+    # Calculate the lower and upper confidence intervals
+    lower <- p - z * se
+    upper <- p + z * se
   }
 
-  # Wilson Interval
+
+  # Vectorized Wilson Interval
+  # Based on Wilson, E. B. (1927)
   if (method == "wilson") {
-    ci <- prop.test(x = x, n = n, correct = correct, conf.level = conf.level)$conf.int
+
+    # Create a vectorized version of the function for computing confidence intervals
+    # for each pair of (x, n) values using prop.test().
+    # Vectorize() makes the function work element-wise over vectors of x and n
+    # Define an anonymous function here
+    ci <- Vectorize(function(x, n) {
+      # Calculate the confidence interval for the proportion using the Wilson method
+      prop.test(x, n, correct = correct, conf.level = conf.level)$conf.int
+    }, vectorize.args = c("x", "n"))  # Specify the arguments to be vectorized
+
+    # Call the vectorized function on the x and n values
+    ci_result <- ci(x, n)  # Apply the vectorized function to the vectors of x and n
+
+    # Extract the lower confidence interval (CI) values from the result matrix
+    lower <- ci_result[1, ]  # First row contains lower CIs
+
+    # Extract the upper confidence interval (CI) values from the result matrix
+    upper <- ci_result[2, ]  # Second row contains upper CIs
   }
 
-  # Clopper-Pearson Interval
+  # Vectorized Clopper-Pearson Interval
+  # Based on Clopper, C. & Pearson, E. S. (1934)
   if (method == "clopper-pearson") {
-    ci <- binom.test(x = x, n = n, conf.level = conf.level)$conf.int
+
+    # Create a vectorized version of the function for computing confidence intervals
+    # for each pair of (x, n) values using binom.test().
+    # Vectorize() makes the function work element-wise over vectors of x and n
+    # Define an anonymous function here
+    ci <- Vectorize(function(x, n) {
+      # Calculate the confidence interval for the proportion using the Clopper-Pearson method
+      binom.test(x, n, conf.level = conf.level)$conf.int
+    }, vectorize.args = c("x", "n"))  # Specify the arguments to be vectorized
+
+    # Call the vectorized function on the x and n values
+    ci_result <- ci(x, n)  # Apply the vectorized function to the vectors of x and n
+
+    # Extract the lower confidence interval (CI) values from the result matrix
+    lower <- ci_result[1, ]  # First row contains lower CIs
+
+    # Extract the upper confidence interval (CI) values from the result matrix
+    upper <- ci_result[2, ]  # Second row contains upper CIs
   }
 
-  # Ensure bounds are within [0,1]
-  ci <- pmin(pmax(ci, 0), 1)
+  # Ensure confidence intervals are within [0,1] bounds
+  # Handle NaN values and ensure confidence intervals are within [0,1] bounds
+  lower <- ifelse(n == 0, NA,
+                  ifelse(lower < 0, 0, lower)
+                  )
+  upper <- ifelse(n == 0, NA,
+                  ifelse(upper > 1, 1, upper)
+                  )
 
+  # Return as a dataframe/tibble-compatible structure
+  return(tibble::tibble(lower_ci = lower, upper_ci = upper))
 }
 
 # clean county names, second part of the ems data analysis workflow
-
 clean_county_names_1 <-
   function(df,
            county_column,
@@ -504,7 +586,6 @@ clean_county_names_1 <-
 
 # clean county names, still the second part but have to start a new one
 # due to if_else() breaking after so many nested statements
-
 clean_county_names_2 <-
   function(df,
            county_column,
@@ -532,7 +613,6 @@ clean_county_names_2 <-
 
     return(clean_counties)
   }
-
 
 # get location data
 # Iowa county data

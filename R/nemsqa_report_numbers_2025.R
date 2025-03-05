@@ -199,6 +199,21 @@ airway_01_result_year <- nemsqar::airway_01(df = NULL,
                               .by = INCIDENT_YEAR
                               )
 
+# get confidence intervals
+airway_01_result_year_ci <- airway_01_result_year |>
+  dplyr::mutate(lower_ci = binomial_confint(data = NULL,
+                                            x = numerator,
+                                            n = denominator,
+                                            method = "agresti-coull",
+                                            )$lower_ci,
+
+                upper_ci = binomial_confint(data = NULL,
+                                            x = numerator,
+                                            n = denominator,
+                                            method = "agresti-coull",
+                                            )$upper_ci
+                )
+
 # regions and years
 airway_01_result_regions_years <- nemsqar::airway_01(df = NULL,
                               patient_scene_table = patient_scene_table,
@@ -225,6 +240,21 @@ airway_01_result_regions_years <- nemsqar::airway_01(df = NULL,
                               ) |>
     dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
     tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
+
+# get confidence intervals
+airway_01_result_regions_years_ci <- airway_01_result_regions_years |>
+  dplyr::mutate(lower_ci = binomial_confint(data = NULL,
+                                            x = numerator,
+                                            n = denominator,
+                                            method = "agresti-coull",
+                                            )$lower_ci,
+
+                upper_ci = binomial_confint(data = NULL,
+                                            x = numerator,
+                                            n = denominator,
+                                            method = "agresti-coull",
+                                            )$upper_ci
+                )
 
 # regions
 airway_01_result_regions <- nemsqar::airway_01(df = NULL,
@@ -1158,60 +1188,78 @@ hypoglycemia_01_result_year <- nemsqar::hypoglycemia_01(df = NULL,
 
 # regions and years
 hypoglycemia_01_result_regions_years <- nemsqar::hypoglycemia_01(df = NULL,
-                                                     patient_scene_table = patient_scene_table,
-                                                     response_table = response_table,
-                                                     situation_table = situation_table,
-                                                     medications_table = medications_table,
-                                                     erecord_01_col = FACT_INCIDENT_PK,
-                                                     incident_date_col = INCIDENT_DATE,
-                                                     patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
-                                                     epatient_15_col = PATIENT_AGE_E_PATIENT_15,
-                                                     epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
-                                                     eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                                     esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                                     esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
-                                                     emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
-                                                     .by = c(INCIDENT_YEAR, `Region: Preparedness`)
-                                                     ) |>
+                                                                 patient_scene_table = patient_scene_table,
+                                                                 response_table = response_table,
+                                                                 situation_table = situation_table,
+                                                                 medications_table = medications_table,
+                                                                 vitals_table = vitals_table,
+                                                                 procedures_table = procedures_table,
+                                                                 erecord_01_col = FACT_INCIDENT_PK,
+                                                                 incident_date_col = INCIDENT_DATE,
+                                                                 patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                                                 epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                                                 epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                                 eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                                                 esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
+                                                                 esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+                                                                 evitals_18_col = VITALS_BLOOD_GLUCOSE_LEVEL_E_VITALS_18,
+                                                                 evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
+                                                                 evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
+                                                                 emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                                 eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
+                                                                 .by = c(INCIDENT_YEAR, `Region: Preparedness`)
+                                                                 ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # regions
 hypoglycemia_01_result_regions <- nemsqar::hypoglycemia_01(df = NULL,
-                                               patient_scene_table = patient_scene_table,
-                                               response_table = response_table,
-                                               situation_table = situation_table,
-                                               medications_table = medications_table,
-                                               erecord_01_col = FACT_INCIDENT_PK,
-                                               incident_date_col = INCIDENT_DATE,
-                                               patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
-                                               epatient_15_col = PATIENT_AGE_E_PATIENT_15,
-                                               epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
-                                               eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                               esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                               esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
-                                               emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
-                                               .by = `Region: Preparedness`
-                                               ) |>
+                                                           patient_scene_table = patient_scene_table,
+                                                           response_table = response_table,
+                                                           situation_table = situation_table,
+                                                           medications_table = medications_table,
+                                                           vitals_table = vitals_table,
+                                                           procedures_table = procedures_table,
+                                                           erecord_01_col = FACT_INCIDENT_PK,
+                                                           incident_date_col = INCIDENT_DATE,
+                                                           patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                                           epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                                           epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                           eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                                           esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
+                                                           esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+                                                           evitals_18_col = VITALS_BLOOD_GLUCOSE_LEVEL_E_VITALS_18,
+                                                           evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
+                                                           evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
+                                                           emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                           eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
+                                                           .by = `Region: Preparedness`
+                                                           ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # overall
 hypoglycemia_01_result_overall <- nemsqar::hypoglycemia_01(df = NULL,
-                                               patient_scene_table = patient_scene_table,
-                                               response_table = response_table,
-                                               situation_table = situation_table,
-                                               medications_table = medications_table,
-                                               erecord_01_col = FACT_INCIDENT_PK,
-                                               incident_date_col = INCIDENT_DATE,
-                                               patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
-                                               epatient_15_col = PATIENT_AGE_E_PATIENT_15,
-                                               epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
-                                               eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                               esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                               esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
-                                               emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03
-                                               )
+                                                           patient_scene_table = patient_scene_table,
+                                                           response_table = response_table,
+                                                           situation_table = situation_table,
+                                                           medications_table = medications_table,
+                                                           vitals_table = vitals_table,
+                                                           procedures_table = procedures_table,
+                                                           erecord_01_col = FACT_INCIDENT_PK,
+                                                           incident_date_col = INCIDENT_DATE,
+                                                           patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                                           epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                                           epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                           eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                                           esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
+                                                           esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+                                                           evitals_18_col = VITALS_BLOOD_GLUCOSE_LEVEL_E_VITALS_18,
+                                                           evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
+                                                           evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
+                                                           emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                           eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
+                                                           )
 
 ### Pediatrics-03b =============================================================
 

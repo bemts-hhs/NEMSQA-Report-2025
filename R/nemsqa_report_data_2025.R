@@ -1,18 +1,16 @@
-### IOWA NEMSQAR REPORT DATA 2025 ##############################################
+### IOWA NEMSQAR REPORT DATA 2025 ----------------------------------------------
 
 # This script prepares for the analyses using the `nemsqar` package in the
 
-###_____________________________________________________________________________
-### PACKAGES ----
-###_____________________________________________________________________________
+### PACKAGES -------------------------------------------------------------------
 
-# CRAN versions ----
+# CRAN versions ================================================================
 # install.packages(c("tidyverse", "traumar", "devtools", "remotes", "janitor",
 #                    "gt", "gtsummary", "gtExtras", "zipcodeR", "naniar",
 #                    "ggrepel"
 #                   ))
 
-# dev version of `nemsqar` ----
+# dev version of `nemsqar` =====================================================
 # remotes::install_github("bemts-hhs/nemsqar")
 
 # load packages ----
@@ -29,7 +27,7 @@ library(zipcodeR)
 library(naniar)
 library(ggrepel)
 
-# Handy Functions ----
+# Handy Functions ==============================================================
 
 ###_____________________________________________________________________________
 # After observing the different problems with Iowa counties, we can
@@ -37,6 +35,57 @@ library(ggrepel)
 # regex within a custom map() function
 # add nature of injury data
 ###_____________________________________________________________________________
+
+# confidence interval function
+
+confint_prop <- function(x, n, method = c("wald", "agresti-coull", "wilson", "clopper-pearson"),
+                         conf.level = 0.95, correct = TRUE, ac_method = "z") {
+
+  method <- match.arg(method)
+
+  # Wald Interval
+  if (method == "wald") {
+    p <- x / n
+    se <- sqrt(p * (1 - p) / n)
+    z <- qnorm(c((1 - conf.level) / 2, 1 - (1 - conf.level) / 2))
+    ci <- p + z * se
+  }
+
+  # Agresti-Coull Interval
+  if (method == "agresti-coull") {
+    if (ac_method == "add") {
+      x_adj <- x + 2
+      n_adj <- n + 4
+    } else {
+      x_adj <- x
+      n_adj <- n
+    }
+    p <- x_adj / n_adj
+    se <- sqrt(p * (1 - p) / n_adj)
+
+    if (ac_method == "z") {
+      z <- 2  # As per Brown, Cai, & DasGupta (2001)
+    } else {
+      z <- qnorm(c((1 - conf.level) / 2, 1 - (1 - conf.level) / 2))
+    }
+
+    ci <- p + z * se
+  }
+
+  # Wilson Interval
+  if (method == "wilson") {
+    ci <- prop.test(x = x, n = n, correct = correct, conf.level = conf.level)$conf.int
+  }
+
+  # Clopper-Pearson Interval
+  if (method == "clopper-pearson") {
+    ci <- binom.test(x = x, n = n, conf.level = conf.level)$conf.int
+  }
+
+  # Ensure bounds are within [0,1]
+  ci <- pmin(pmax(ci, 0), 1)
+
+}
 
 # clean county names, second part of the ems data analysis workflow
 
@@ -516,9 +565,7 @@ zipcodes <- zipcodeR::zip_code_db |>
   dplyr::rename("new_county" = "county") |>
   dplyr::rename("new_zipcode" = "zipcode")
 
-###_____________________________________________________________________________
-### DATA ----
-###_____________________________________________________________________________
+### DATA =======================================================================
 
 # files have common text in the names to make import and management easier
 # function to make import streamlined and easy
@@ -585,13 +632,58 @@ clean_names_dates_data <- function(df) {
 
 }
 
+# a plotting function for the analytical script
+plot_nemsqa_pops <- function(df, wrap_width = 50, type = c("col", "line"),
+                             plot_title, ...
+                             ) {
+
+  # the filter_process object returned by all *_population functions
+  # has the same structure across all nemsqar *_population functions
+  # as such, this function will help plot the progression of counts across
+  # an object that includes filter_process data from multiple years
+
+  if(length(type) > 1) { # default to column chart
+
+    type <- "col"
+
+  }
+
+  if(type == "col") { # column chart option
+
+  temp_plot <- df |>
+    ggplot2::ggplot(ggplot2::aes(x = YEAR, y = count, fill = factor(YEAR), label = traumar::pretty_number(count, n_decimal = 2))) +
+    ggplot2::geom_col(alpha = 0.5, position = ggplot2::position_dodge())
+
+  } else if(type == "line") { # line chart
+
+    temp_plot <- df |>
+      ggplot2::ggplot(ggplot2::aes(x = YEAR, y = count, color = "lightgray", label = traumar::pretty_number(count, n_decimal = 2))) +
+      ggplot2::geom_line(alpha = 0.5, linewidth = 1.5, lineend = "round", linejoin = "round")
+
+  }
+
+  # finish off the plot with final adjustments to graphics parameters
+  plot_pops <- temp_plot +
+    ggrepel::geom_text_repel(direction = "y", nudge_y = dplyr::if_else(df$count > 10, -1, -df$count * 0.1), segment.color = "transparent", seed = 100, size = 4.5, color = "darkslategray", fontface = "bold", font = "sans") +
+    ggplot2::scale_y_continuous(labels = function(x) pretty_number(x, n_decimal = 2, truncate = TRUE)) +
+    ggplot2::guides(fill = "none", color = "none") +
+    ggplot2::facet_wrap(~ stringr::str_wrap(filter, width = wrap_width), scales = "free_y") +
+    ggplot2::labs(x = NULL, y = NULL,
+                  title = glue::glue("{plot_title} Population Trends"), subtitle = "Source: ImageTrend Elite EMS Registry | CY 2021-2024"
+                  ) +
+    traumar::theme_cleaner(...)
+
+  return(plot_pops)
+
+}
+
 ###_____________________________________________________________________________
 # we will examine calendar years 2021-2024 of EMS data
 # we will ingest various tables from each data section of
 # NEMSIS to leverage that approach in the `nemsqar` package
 ###_____________________________________________________________________________
 
-# airway tables ----
+### airway tables ################################################################
 airway_2021 <- import_nemsqa_data(table = "airway", year = 2021)
 airway_2022 <- import_nemsqa_data(table = "airway", year = 2022)
 airway_2023 <- import_nemsqa_data(table = "airway", year = 2023)
@@ -608,7 +700,7 @@ airway_rbind <- dplyr::bind_rows(airway_2021,
 airway_table <- airway_rbind |>
   clean_names_dates_data()
 
-# arrest tables ----
+### arrest tables ################################################################
 arrest_2021 <- import_nemsqa_data(table = "arrest", year = 2021)
 arrest_2022 <- import_nemsqa_data(table = "arrest", year = 2022)
 arrest_2023 <- import_nemsqa_data(table = "arrest", year = 2023)
@@ -625,7 +717,7 @@ arrest_rbind <- dplyr::bind_rows(arrest_2021,
 arrest_table <- arrest_rbind |>
   clean_names_dates_data()
 
-# disposition tables ----
+### disposition tables ###########################################################
 disposition_2021 <- import_nemsqa_data(table = "disposition", year = 2021)
 disposition_2022 <- import_nemsqa_data(table = "disposition", year = 2022)
 disposition_2023 <- import_nemsqa_data(table = "disposition", year = 2023)
@@ -642,13 +734,16 @@ disposition_rbind <- dplyr::bind_rows(disposition_2021,
 disposition_table <- disposition_rbind |>
   clean_names_dates_data()
 
-# exam tables ----
+### exam tables ##################################################################
+
+###_____________________________________________________________________________
 # handle the exam tables differently due to size
 # workflow will change from going through the dplyr::bind_rows() set to
 # manipulations to manipulations before dplyr::bind_rows()
 # import and clean each file
 # break up the 2024 file into its 2 month parts (6) and clean each
 # then bind all together at the end
+###_____________________________________________________________________________
 
 # 2021
 exam_2021 <- import_nemsqa_data(table = "exam", year = 2021)
@@ -718,7 +813,7 @@ exam_table <- dplyr::bind_rows(exam_2021_clean,
                                exam_2024_6_clean
                                )
 
-# injury tables ----
+### injury tables ################################################################
 injury_2021 <- import_nemsqa_data(table = "injury", year = 2021)
 injury_2022 <- import_nemsqa_data(table = "injury", year = 2022)
 injury_2023 <- import_nemsqa_data(table = "injury", year = 2023)
@@ -735,7 +830,7 @@ injury_rbind <- dplyr::bind_rows(injury_2021,
 injury_table <- injury_rbind |>
   clean_names_dates_data()
 
-# medications tables ----
+### medications tables ###########################################################
 medications_2021 <- import_nemsqa_data(table = "medications", year = 2021)
 medications_2022 <- import_nemsqa_data(table = "medications", year = 2022)
 medications_2023 <- import_nemsqa_data(table = "medications", year = 2023)
@@ -752,7 +847,7 @@ medications_rbind <- dplyr::bind_rows(medications_2021,
 medications_table <- medications_rbind |>
   clean_names_dates_data()
 
-# patient/scene tables ----
+### patient/scene tables #########################################################
 # given that patient and scene data are 1-1 relationship, join those tables
 patient_scene_2021 <- import_nemsqa_data(table = "patient_scene", year = 2021)
 patient_scene_2022 <- import_nemsqa_data(table = "patient_scene", year = 2022)
@@ -812,7 +907,7 @@ patient_scene_table <- patient_scene_clean |>
                        zip_column = PATIENT_HOME_POSTAL_CODE_E_PATIENT_09
                        )
 
-# procedures tables ----
+### procedures tables ############################################################
 procedures_2021 <- import_nemsqa_data(table = "procedures", year = 2021)
 procedures_2022 <- import_nemsqa_data(table = "procedures", year = 2022)
 procedures_2023 <- import_nemsqa_data(table = "procedures", year = 2023)
@@ -829,7 +924,7 @@ procedures_rbind <- dplyr::bind_rows(procedures_2021,
 procedures_table <- procedures_rbind |>
   clean_names_dates_data()
 
-# response tables ----
+### response tables ##############################################################
 response_2021 <- import_nemsqa_data(table = "response", year = 2021)
 response_2022 <- import_nemsqa_data(table = "response", year = 2022)
 response_2023 <- import_nemsqa_data(table = "response", year = 2023)
@@ -846,7 +941,7 @@ response_rbind <- dplyr::bind_rows(response_2021,
 response_table <- response_rbind |>
   clean_names_dates_data()
 
-# situation tables ----
+### situation tables #############################################################
 situation_2021 <- import_nemsqa_data(table = "situation", year = 2021)
 situation_2022 <- import_nemsqa_data(table = "situation", year = 2022)
 situation_2023 <- import_nemsqa_data(table = "situation", year = 2023)
@@ -863,7 +958,7 @@ situation_rbind <- dplyr::bind_rows(situation_2021,
 situation_table <- situation_rbind |>
   clean_names_dates_data()
 
-# vitals tables ----
+### vitals tables ################################################################
 vitals_2021 <- import_nemsqa_data(table = "vitals", year = 2021)
 vitals_2022 <- import_nemsqa_data(table = "vitals", year = 2022)
 vitals_2023 <- import_nemsqa_data(table = "vitals", year = 2023)

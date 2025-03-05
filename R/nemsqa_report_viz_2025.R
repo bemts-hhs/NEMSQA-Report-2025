@@ -1,4 +1,4 @@
-### IOWA NEMSQA VISUALIZATIONS 2025 ############################################
+### IOWA NEMSQA VISUALIZATIONS 2025 ###
 
 ###_____________________________________________________________________________
 ### this script will contain all visualizations

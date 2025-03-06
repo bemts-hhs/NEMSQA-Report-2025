@@ -7,11 +7,11 @@
 # CRAN versions ================================================================
 # install.packages(c("tidyverse", "traumar", "devtools", "remotes", "janitor",
 #                    "gt", "gtsummary", "gtExtras", "zipcodeR", "naniar",
-#                    "ggrepel"
+#                    "ggrepel", "nemsqar", "binom"
 #                   ))
 
-# dev version of `nemsqar` =====================================================
-# remotes::install_github("bemts-hhs/nemsqar")
+# CRAN version of `nemsqar` =====================================================
+# install.packages("nemsqar")
 
 # load packages ----
 library(tidyverse)
@@ -26,6 +26,7 @@ library(gtExtras)
 library(zipcodeR)
 library(naniar)
 library(ggrepel)
+library(binom)
 
 # Handy Functions ==============================================================
 
@@ -38,136 +39,30 @@ library(ggrepel)
 
 # confidence interval function
 binomial_confint <- function(data,
-                             x,
-                             n,
-                             method = c("wilson", "agresti-coull",
-                                        "clopper-pearson", "wald"),
-                             conf.level = 0.95,
-                             correct = TRUE,
-                             ac_method = c("z", "add_two")) {
+                             .method = c("wilson", "exact", "ac", "asymptotic",
+                                        "prop.test", "bayes", "logit",
+                                        "cloglog", "probit", "all"),
+                             conf_level = 0.95) {
 
   # Set default method and adjustment method
-  method <- match.arg(method)
-  ac_method <- match.arg(ac_method)
+  .method <- match.arg(.method)
 
-  # If the user passes a tibble or data.frame
-  if(!is.null(data)) {
+  # utilize dplyr::mutate() to assign the 95% confidence intervals
+  # for the binomial proportions returned by the nemsqar wrapper
+  # functions
+  data |>
+  dplyr::mutate(lower_ci = binom::binom.confint(x = numerator,
+                                         n = denominator,
+                                         method = .method,
+                                         conf.level = conf_level
+                                         )$lower,
+                upper_ci = binom::binom.confint(x = numerator,
+                                         n = denominator,
+                                         method = .method,
+                                         conf.level = conf_level
+                                         )$upper
+                )
 
-  # Extract values of the specified columns using the provided data
-  x <- data |> pull({{x}})
-  n <- data |> pull({{n}})
-
-  }
-
-  # Initialize lower and upper CI bounds
-  lower <- numeric()
-  upper <- numeric()
-
-  # Wald Interval
-  if (method == "wald") {
-    p <- x / n
-    se <- sqrt(p * (1 - p) / n)
-    z <- qnorm((1 + conf.level) / 2)
-    lower <- p - z * se
-    upper <- p + z * se
-  }
-
-  # Poisson Confidence Interval (for count data)
-  if (method == "poisson") {
-    ci <- Vectorize(function(x) {
-      poisson.test(x, conf.level = conf.level)$conf.int
-    }, vectorize.args = "x")(x)
-
-    lower <- ci[1, ] / n  # Convert back to proportion (CI per `n`)
-    upper <- ci[2, ] / n
-  }
-
-  # Agresti-Coull Interval
-  # Accoring to Agresti & Coull (1998)
-  if (method == "agresti-coull") {
-
-    # Adjust x and n values if the "add_two" method is selected
-    if (ac_method == "add_two") {
-      x_adj <- x + 2  # Add 2 successes
-      n_adj <- n + 4  # Add 2 failures (4 trials)
-    } else {
-      x_adj <- x  # No adjustment
-      n_adj <- n  # No adjustment
-    }
-
-    # Calculate proportion with adjusted values
-    p <- x_adj / n_adj
-
-    # Standard error estimate
-    se <- sqrt(p * (1 - p) / n_adj)
-
-    # Z value for confidence interval calculation
-    # Based on Brown, Cai, & DasGupta (2001)
-    z <- ifelse(ac_method == "z", 2, qnorm((1 + conf.level) / 2))
-
-    # Calculate the lower and upper confidence intervals
-    lower <- p - z * se
-    upper <- p + z * se
-  }
-
-
-  # Vectorized Wilson Interval
-  # Based on Wilson, E. B. (1927)
-  if (method == "wilson") {
-
-    # Create a vectorized version of the function for computing confidence intervals
-    # for each pair of (x, n) values using prop.test().
-    # Vectorize() makes the function work element-wise over vectors of x and n
-    # Define an anonymous function here
-    ci <- Vectorize(function(x, n) {
-      # Calculate the confidence interval for the proportion using the Wilson method
-      prop.test(x, n, correct = correct, conf.level = conf.level)$conf.int
-    }, vectorize.args = c("x", "n"))  # Specify the arguments to be vectorized
-
-    # Call the vectorized function on the x and n values
-    ci_result <- ci(x, n)  # Apply the vectorized function to the vectors of x and n
-
-    # Extract the lower confidence interval (CI) values from the result matrix
-    lower <- ci_result[1, ]  # First row contains lower CIs
-
-    # Extract the upper confidence interval (CI) values from the result matrix
-    upper <- ci_result[2, ]  # Second row contains upper CIs
-  }
-
-  # Vectorized Clopper-Pearson Interval
-  # Based on Clopper, C. & Pearson, E. S. (1934)
-  if (method == "clopper-pearson") {
-
-    # Create a vectorized version of the function for computing confidence intervals
-    # for each pair of (x, n) values using binom.test().
-    # Vectorize() makes the function work element-wise over vectors of x and n
-    # Define an anonymous function here
-    ci <- Vectorize(function(x, n) {
-      # Calculate the confidence interval for the proportion using the Clopper-Pearson method
-      binom.test(x, n, conf.level = conf.level)$conf.int
-    }, vectorize.args = c("x", "n"))  # Specify the arguments to be vectorized
-
-    # Call the vectorized function on the x and n values
-    ci_result <- ci(x, n)  # Apply the vectorized function to the vectors of x and n
-
-    # Extract the lower confidence interval (CI) values from the result matrix
-    lower <- ci_result[1, ]  # First row contains lower CIs
-
-    # Extract the upper confidence interval (CI) values from the result matrix
-    upper <- ci_result[2, ]  # Second row contains upper CIs
-  }
-
-  # Ensure confidence intervals are within [0,1] bounds
-  # Handle NaN values and ensure confidence intervals are within [0,1] bounds
-  lower <- ifelse(n == 0, NA,
-                  ifelse(lower < 0, 0, lower)
-                  )
-  upper <- ifelse(n == 0, NA,
-                  ifelse(upper > 1, 1, upper)
-                  )
-
-  # Return as a dataframe/tibble-compatible structure
-  return(tibble::tibble(lower_ci = lower, upper_ci = upper))
 }
 
 # clean county names, second part of the ems data analysis workflow
@@ -717,6 +612,12 @@ plot_nemsqa_pops <- function(df, wrap_width = 50, type = c("col", "line"),
                              plot_title, ...
                              ) {
 
+  # set up the df with a helper variable for
+  # nudge_y the geom_text_repel labels
+
+  df <- df |>
+    dplyr::mutate(nudge_var = dplyr::if_else(count > 10, -1, -count * 0.1))
+
   # the filter_process object returned by all *_population functions
   # has the same structure across all nemsqar *_population functions
   # as such, this function will help plot the progression of counts across
@@ -731,20 +632,25 @@ plot_nemsqa_pops <- function(df, wrap_width = 50, type = c("col", "line"),
   if(type == "col") { # column chart option
 
   temp_plot <- df |>
-    ggplot2::ggplot(ggplot2::aes(x = YEAR, y = count, fill = factor(YEAR), label = traumar::pretty_number(count, n_decimal = 2))) +
+    ggplot2::ggplot(ggplot2::aes(x = YEAR, y = count, fill = factor(YEAR))) +
     ggplot2::geom_col(alpha = 0.5, position = ggplot2::position_dodge())
 
   } else if(type == "line") { # line chart
 
     temp_plot <- df |>
-      ggplot2::ggplot(ggplot2::aes(x = YEAR, y = count, color = "lightgray", label = traumar::pretty_number(count, n_decimal = 2))) +
+      ggplot2::ggplot(ggplot2::aes(x = YEAR, y = count, color = "lightgray")) +
       ggplot2::geom_line(alpha = 0.5, linewidth = 1.5, lineend = "round", linejoin = "round")
 
   }
 
   # finish off the plot with final adjustments to graphics parameters
   plot_pops <- temp_plot +
-    ggrepel::geom_text_repel(direction = "y", nudge_y = dplyr::if_else(df$count > 10, -1, -df$count * 0.1), segment.color = "transparent", seed = 100, size = 4.5, color = "darkslategray", fontface = "bold", font = "sans") +
+    ggplot2::geom_text(aes(y = count - count * 0.1, label = traumar::pretty_number(count, n_decimal = 2)),
+                             size = 4,
+                             color = "darkslategray",
+                             fontface = "bold",
+                             font = "sans"
+                             ) +
     ggplot2::scale_y_continuous(labels = function(x) pretty_number(x, n_decimal = 2, truncate = TRUE)) +
     ggplot2::guides(fill = "none", color = "none") +
     ggplot2::facet_wrap(~ stringr::str_wrap(filter, width = wrap_width), scales = "free_y") +

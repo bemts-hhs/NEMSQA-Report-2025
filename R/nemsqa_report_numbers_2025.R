@@ -39,7 +39,6 @@ airway_01_pop <- nemsqar::airway_01_population(df = NULL,
                                            eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                                            eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06
                                            )
-
 # population results for 2021-2024
 airway_01_pop_filter_process <- airway_01_pop$filter_process
 
@@ -200,19 +199,8 @@ airway_01_result_year <- nemsqar::airway_01(df = NULL,
                               )
 
 # get confidence intervals
-airway_01_result_year_ci <- airway_01_result_year |>
-  dplyr::mutate(lower_ci = binomial_confint(data = NULL,
-                                            x = numerator,
-                                            n = denominator,
-                                            method = "agresti-coull",
-                                            )$lower_ci,
-
-                upper_ci = binomial_confint(data = NULL,
-                                            x = numerator,
-                                            n = denominator,
-                                            method = "agresti-coull",
-                                            )$upper_ci
-                )
+airway_01_result_year <- airway_01_result_year |>
+  binomial_confint(.method = "wilson")
 
 # regions and years
 airway_01_result_regions_years <- nemsqar::airway_01(df = NULL,
@@ -242,19 +230,8 @@ airway_01_result_regions_years <- nemsqar::airway_01(df = NULL,
     tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # get confidence intervals
-airway_01_result_regions_years_ci <- airway_01_result_regions_years |>
-  dplyr::mutate(lower_ci = binomial_confint(data = NULL,
-                                            x = numerator,
-                                            n = denominator,
-                                            method = "agresti-coull",
-                                            )$lower_ci,
-
-                upper_ci = binomial_confint(data = NULL,
-                                            x = numerator,
-                                            n = denominator,
-                                            method = "agresti-coull",
-                                            )$upper_ci
-                )
+airway_01_result_regions_years <- airway_01_result_regions_years |>
+  binomial_confint(.method = "wilson")
 
 # regions
 airway_01_result_regions <- nemsqar::airway_01(df = NULL,
@@ -306,6 +283,10 @@ airway_01_result_overall <- nemsqar::airway_01(df = NULL,
                               eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                               eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06
                               )
+
+# get confidence intervals
+airway_01_result_overall <- airway_01_result_overall |>
+  binomial_confint(.method = "wilson")
 
 ### Airway-05 ==================================================================
 
@@ -476,6 +457,10 @@ airway_05_result_year <- nemsqar::airway_05(df = NULL,
                                    .by = INCIDENT_YEAR
                                    )
 
+# get confidence intervals
+airway_05_result_year <- airway_05_result_year |>
+  binomial_confint(.method = "wilson")
+
 # regions and years
 airway_05_result_regions_years <- nemsqar::airway_05(df = NULL,
                                    patient_scene_table = patient_scene_table,
@@ -499,6 +484,10 @@ airway_05_result_regions_years <- nemsqar::airway_05(df = NULL,
                                    ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
+
+# get confidence intervals
+airway_05_result_regions_years <- airway_05_result_regions_years |>
+  binomial_confint(.method = "wilson")
 
 # regions
 airway_05_result_regions <- nemsqar::airway_05(df = NULL,
@@ -524,6 +513,10 @@ airway_05_result_regions <- nemsqar::airway_05(df = NULL,
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
+# get the confidence intervals
+airway_05_result_regions <- airway_05_result_regions |>
+  binomial_confint(.method = "wilson")
+
 # overall
 airway_05_result_overall <- nemsqar::airway_05(df = NULL,
                                    patient_scene_table = patient_scene_table,
@@ -544,6 +537,10 @@ airway_05_result_overall <- nemsqar::airway_05(df = NULL,
                                    eprocedures_02_col = PROCEDURE_PERFORMED_PRIOR_TO_EMS_CARE_E_PROCEDURES_02,
                                    eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
                                    )
+
+# get the confidence intervals
+airway_05_result_overall <- airway_05_result_overall |>
+  binomial_confint(.method = "wilson")
 
 ### Airway-18 ==================================================================
 
@@ -726,6 +723,10 @@ airway_18_result_year <- nemsqar::airway_18(df = NULL,
                                             .by = INCIDENT_YEAR
                                             )
 
+# get confidence intervals
+airway_18_result_year <- airway_18_result_year |>
+  binomial_confint(.method = "wilson")
+
 # regions and years
 airway_18_result_regions_years <- nemsqar::airway_18(df = NULL,
                                                      patient_scene_table = patient_scene_table,
@@ -751,6 +752,10 @@ airway_18_result_regions_years <- nemsqar::airway_18(df = NULL,
                                                      ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
+
+# get confidence intervals
+airway_18_result_regions_years <- airway_18_result_regions_years |>
+  binomial_confint(.method = "wilson")
 
 # regions
 airway_18_result_regions <- nemsqar::airway_18(df = NULL,
@@ -778,6 +783,10 @@ airway_18_result_regions <- nemsqar::airway_18(df = NULL,
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
+# get confidence intervals
+airway_18_result_regions <- airway_18_result_regions |>
+  binomial_confint(.method = "wilson")
+
 # overall
 airway_18_result_overall <- nemsqar::airway_18(df = NULL,
                                                patient_scene_table = patient_scene_table,
@@ -801,6 +810,9 @@ airway_18_result_overall <- nemsqar::airway_18(df = NULL,
                                                evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
                                                )
 
+# get confidence intervals
+airway_18_result_overall <- airway_18_result_overall |>
+  binomial_confint(.method = "wilson")
 
 ### Asthma-01 ==================================================================
 
@@ -947,6 +959,10 @@ asthma_01_result_year <- nemsqar::asthma_01(df = NULL,
                                             .by = INCIDENT_YEAR
                                             )
 
+# get confidence intervals
+asthma_01_result_year <- asthma_01_result_year |>
+  binomial_confint(.method = "wilson")
+
 # regions and years
 asthma_01_result_regions_years <- nemsqar::asthma_01(df = NULL,
                                                      patient_scene_table = patient_scene_table,
@@ -966,6 +982,10 @@ asthma_01_result_regions_years <- nemsqar::asthma_01(df = NULL,
                                                      ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
+
+# get confidence intervals
+asthma_01_result_regions_years <- asthma_01_result_regions_years |>
+  binomial_confint(.method = "wilson")
 
 # regions
 asthma_01_result_regions <- nemsqar::asthma_01(df = NULL,
@@ -987,6 +1007,10 @@ asthma_01_result_regions <- nemsqar::asthma_01(df = NULL,
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
+# get confidence intervals
+asthma_01_result_regions <- asthma_01_result_regions |>
+  binomial_confint(.method = "wilson")
+
 # overall
 asthma_01_result_overall <- nemsqar::asthma_01(df = NULL,
                                                patient_scene_table = patient_scene_table,
@@ -1004,6 +1028,9 @@ asthma_01_result_overall <- nemsqar::asthma_01(df = NULL,
                                                emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03
                                                )
 
+# get confidence intervals
+asthma_01_result_overall <- asthma_01_result_overall |>
+  binomial_confint(.method = "wilson")
 
 ### Hypoglycemia-01 ============================================================
 
@@ -1186,6 +1213,10 @@ hypoglycemia_01_result_year <- nemsqar::hypoglycemia_01(df = NULL,
                                                         .by = INCIDENT_YEAR
                                                         )
 
+# get confidence intervals
+hypoglycemia_01_result_year <- hypoglycemia_01_result_year |>
+  binomial_confint(.method = "wilson")
+
 # regions and years
 hypoglycemia_01_result_regions_years <- nemsqar::hypoglycemia_01(df = NULL,
                                                                  patient_scene_table = patient_scene_table,
@@ -1211,6 +1242,10 @@ hypoglycemia_01_result_regions_years <- nemsqar::hypoglycemia_01(df = NULL,
                                                                  ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
+
+# get confidence intervals
+hypoglycemia_01_result_regions_years <- hypoglycemia_01_result_regions_years |>
+  binomial_confint(.method = "wilson")
 
 # regions
 hypoglycemia_01_result_regions <- nemsqar::hypoglycemia_01(df = NULL,
@@ -1238,6 +1273,10 @@ hypoglycemia_01_result_regions <- nemsqar::hypoglycemia_01(df = NULL,
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
+# get confidence intervals
+hypoglycemia_01_result_regions <- hypoglycemia_01_result_regions |>
+  binomial_confint(.method = "wilson")
+
 # overall
 hypoglycemia_01_result_overall <- nemsqar::hypoglycemia_01(df = NULL,
                                                            patient_scene_table = patient_scene_table,
@@ -1260,6 +1299,10 @@ hypoglycemia_01_result_overall <- nemsqar::hypoglycemia_01(df = NULL,
                                                            emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                            eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
                                                            )
+
+# get confidence intervals
+hypoglycemia_01_result_overall <- hypoglycemia_01_result_overall |>
+  binomial_confint(.method = "wilson")
 
 ### Pediatrics-03b =============================================================
 
@@ -1412,6 +1455,10 @@ pediatrics_03b_result_year <- nemsqar::pediatrics_03b(df = NULL,
                                                       .by = INCIDENT_YEAR
                                                       )
 
+# get confidence intervals
+pediatrics_03b_result_year <- pediatrics_03b_result_year |>
+  binomial_confint(.method = "wilson")
+
 # regions and years
 pediatrics_03b_result_regions_years <- nemsqar::pediatrics_03b(df = NULL,
                                                                patient_scene_table = patient_scene_table,
@@ -1432,6 +1479,10 @@ pediatrics_03b_result_regions_years <- nemsqar::pediatrics_03b(df = NULL,
                                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
+
+# get confidence intervals
+pediatrics_03b_result_regions_years <- pediatrics_03b_result_regions_years |>
+  binomial_confint(.method = "wilson")
 
 # regions
 pediatrics_03b_result_regions <- nemsqar::pediatrics_03b(df = NULL,
@@ -1454,6 +1505,10 @@ pediatrics_03b_result_regions <- nemsqar::pediatrics_03b(df = NULL,
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
+# get confidence intervals
+pediatrics_03b_result_regions <- pediatrics_03b_result_regions |>
+  binomial_confint(.method = "wilson")
+
 # overall
 pediatrics_03b_result_overall <- nemsqar::pediatrics_03b(df = NULL,
                                                          patient_scene_table = patient_scene_table,
@@ -1471,6 +1526,10 @@ pediatrics_03b_result_overall <- nemsqar::pediatrics_03b(df = NULL,
                                                          emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                          emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04
                                                          )
+
+# get confidence intervals
+pediatrics_03b_result_overall <- pediatrics_03b_result_overall |>
+  binomial_confint(.method = "wilson")
 
 ### Respiratory-01 =============================================================
 
@@ -1623,6 +1682,10 @@ respiratory_01_result_year <- nemsqar::respiratory_01(df = NULL,
                                                       .by = INCIDENT_YEAR
                                                       )
 
+# get confidence intervals
+respiratory_01_result_year <- respiratory_01_result_year |>
+  binomial_confint(.method = "wilson")
+
 # regions and years
 respiratory_01_result_regions_years <- nemsqar::respiratory_01(df = NULL,
                                                                patient_scene_table = patient_scene_table,
@@ -1643,6 +1706,10 @@ respiratory_01_result_regions_years <- nemsqar::respiratory_01(df = NULL,
                                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
+
+# get confidence intervals
+respiratory_01_result_regions_years <- respiratory_01_result_regions_years |>
+  binomial_confint(.method = "wilson")
 
 # regions
 respiratory_01_result_regions <- nemsqar::respiratory_01(df = NULL,
@@ -1665,6 +1732,10 @@ respiratory_01_result_regions <- nemsqar::respiratory_01(df = NULL,
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
+# get confidence intervals
+respiratory_01_result_regions <- respiratory_01_result_regions |>
+  binomial_confint(.method = "wilson")
+
 # overall
 respiratory_01_result_overall <- nemsqar::respiratory_01(df = NULL,
                                                          patient_scene_table = patient_scene_table,
@@ -1683,8 +1754,232 @@ respiratory_01_result_overall <- nemsqar::respiratory_01(df = NULL,
                                                          evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
                                                          )
 
+# get confidence intervals
+respiratory_01_result_overall <- respiratory_01_result_overall |>
+  binomial_confint(.method = "wilson")
+
 ### Respiratory-02 =============================================================
 
 ### respirator-02 populations ##################################################
 
+# over all years 2021-2024
+respiratory_02_pop <- respiratory_02_population(df = NULL,
+                                      patient_scene_table = patient_scene_table,
+                                      response_table = response_table,
+                                      vitals_table = vitals_table,
+                                      medications_table = medications_table,
+                                      procedures_table = procedures_table,
+                                      erecord_01_col = FACT_INCIDENT_PK,
+                                      incident_date_col = INCIDENT_DATE,
+                                      patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                      epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                      epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                      eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                      evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
+                                      evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
+                                      )
+
+# population results for 2021-2024
+respiratory_02_pop_filter_process <- respiratory_02_pop$filter_process
+
+# 2021
+respiratory_02_pop_2021 <- respiratory_02_population(df = NULL,
+                                                     patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                                     response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                                     situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                                     vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                                     erecord_01_col = FACT_INCIDENT_PK,
+                                                     incident_date_col = INCIDENT_DATE,
+                                                     patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                                     epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                                     epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                     eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                                     esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
+                                                     esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+                                                     evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
+                                                     evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
+                                                     )
+
+# population results 2021
+respiratory_02_pop_filter_process_2021 <- respiratory_02_pop_2021$filter_process |>
+  dplyr::mutate(YEAR = 2021)
+
+# 2022
+respiratory_02_pop_2022 <- respiratory_02_population(df = NULL,
+                                                     patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                                     response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                                     situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                                     vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                                     erecord_01_col = FACT_INCIDENT_PK,
+                                                     incident_date_col = INCIDENT_DATE,
+                                                     patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                                     epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                                     epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                     eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                                     esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
+                                                     esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+                                                     evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
+                                                     evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
+                                                     )
+
+# population results 2022
+respiratory_02_pop_filter_process_2022 <- respiratory_02_pop_2022$filter_process |>
+  dplyr::mutate(YEAR = 2022)
+
+# 2023
+respiratory_02_pop_2023 <- respiratory_02_population(df = NULL,
+                                                     patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                                     response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                                     situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                                     vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                                     erecord_01_col = FACT_INCIDENT_PK,
+                                                     incident_date_col = INCIDENT_DATE,
+                                                     patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                                     epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                                     epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                     eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                                     esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
+                                                     esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+                                                     evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
+                                                     evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
+                                                     )
+
+# population results 2023
+respiratory_02_pop_filter_process_2023 <- respiratory_02_pop_2023$filter_process |>
+  dplyr::mutate(YEAR = 2023)
+
+# 2024
+respiratory_02_pop_2024 <- respiratory_02_population(df = NULL,
+                                                     patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                                     response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                                     situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                                     vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                                     erecord_01_col = FACT_INCIDENT_PK,
+                                                     incident_date_col = INCIDENT_DATE,
+                                                     patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                                     epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                                     epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                     eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                                     esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
+                                                     esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+                                                     evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
+                                                     evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
+                                                     )
+
+# population results 2024
+respiratory_02_pop_filter_process_2024 <- respiratory_02_pop_2024$filter_process |>
+  dplyr::mutate(YEAR = 2024)
+
+# airway-18 populations over the years
+respiratory_02_pop_years <- dplyr::bind_rows(respiratory_02_pop_filter_process_2021,
+                                        respiratory_02_pop_filter_process_2022,
+                                        respiratory_02_pop_filter_process_2023,
+                                        respiratory_02_pop_filter_process_2024
+                                        )
+
+# plot population trends over time
+respiratory_02_pop_years |>
+  plot_nemsqa_pops(type = "col",
+                   wrap_width = 25,
+                   plot_title = "Respiratory-01",
+                   facets = TRUE,
+                   vjust_title = 2,
+                   vjust_subtitle = 1.5
+                   )
+
 ### respiratory-02 results #####################################################
+
+# year
+respiratory_02_result_year <- nemsqar::respiratory_02(df = NULL,
+                                                      patient_scene_table = patient_scene_table,
+                                                      response_table = response_table,
+                                                      situation_table = situation_table,
+                                                      vitals_table = vitals_table,
+                                                      erecord_01_col = FACT_INCIDENT_PK,
+                                                      incident_date_col = INCIDENT_DATE,
+                                                      patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                                      epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                                      epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                      eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                                      esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
+                                                      esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+                                                      evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
+                                                      evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                                      .by = INCIDENT_YEAR
+                                                      )
+
+# get confidence intervals
+respiratory_02_result_year <- respiratory_02_result_year |>
+  binomial_confint(.method = "wilson")
+
+# regions and years
+respiratory_02_result_regions_years <- nemsqar::respiratory_02(df = NULL,
+                                                               patient_scene_table = patient_scene_table,
+                                                               response_table = response_table,
+                                                               situation_table = situation_table,
+                                                               vitals_table = vitals_table,
+                                                               erecord_01_col = FACT_INCIDENT_PK,
+                                                               incident_date_col = INCIDENT_DATE,
+                                                               patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                                               epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                                               epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                               eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                                               esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
+                                                               esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+                                                               evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
+                                                               evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                                               .by = c(INCIDENT_YEAR, `Region: Preparedness`)
+                                                               ) |>
+  dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
+  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
+
+# get confidence intervals
+respiratory_02_result_regions_years <- respiratory_02_result_regions_years |>
+  binomial_confint(.method = "wilson")
+
+# regions
+respiratory_02_result_regions <- nemsqar::respiratory_02(df = NULL,
+                                                         patient_scene_table = patient_scene_table,
+                                                         response_table = response_table,
+                                                         situation_table = situation_table,
+                                                         vitals_table = vitals_table,
+                                                         erecord_01_col = FACT_INCIDENT_PK,
+                                                         incident_date_col = INCIDENT_DATE,
+                                                         patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                                         epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                                         epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                         eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                                         esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
+                                                         esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+                                                         evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
+                                                         evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                                         .by = `Region: Preparedness`
+                                                         ) |>
+  dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
+  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
+
+# get confidence intervals
+respiratory_02_result_regions <- respiratory_02_result_regions |>
+  binomial_confint(.method = "wilson")
+
+# overall
+respiratory_02_result_overall <- nemsqar::respiratory_02(df = NULL,
+                                                         patient_scene_table = patient_scene_table,
+                                                         response_table = response_table,
+                                                         situation_table = situation_table,
+                                                         vitals_table = vitals_table,
+                                                         erecord_01_col = FACT_INCIDENT_PK,
+                                                         incident_date_col = INCIDENT_DATE,
+                                                         patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                                         epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                                         epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                         eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                                         esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
+                                                         esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+                                                         evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
+                                                         evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
+                                                         )
+
+# get confidence intervals
+respiratory_02_result_overall <- respiratory_02_result_overall |>
+  binomial_confint(.method = "wilson")

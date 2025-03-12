@@ -200,7 +200,7 @@ airway_01_result_year <- nemsqar::airway_01(df = NULL,
 
 # get confidence intervals
 airway_01_result_year <- airway_01_result_year |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions and years
 airway_01_result_regions_years <- nemsqar::airway_01(df = NULL,
@@ -231,7 +231,7 @@ airway_01_result_regions_years <- nemsqar::airway_01(df = NULL,
 
 # get confidence intervals
 airway_01_result_regions_years <- airway_01_result_regions_years |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions
 airway_01_result_regions <- nemsqar::airway_01(df = NULL,
@@ -286,7 +286,7 @@ airway_01_result_overall <- nemsqar::airway_01(df = NULL,
 
 # get confidence intervals
 airway_01_result_overall <- airway_01_result_overall |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 ### Airway-05 ==================================================================
 
@@ -459,7 +459,7 @@ airway_05_result_year <- nemsqar::airway_05(df = NULL,
 
 # get confidence intervals
 airway_05_result_year <- airway_05_result_year |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions and years
 airway_05_result_regions_years <- nemsqar::airway_05(df = NULL,
@@ -487,7 +487,7 @@ airway_05_result_regions_years <- nemsqar::airway_05(df = NULL,
 
 # get confidence intervals
 airway_05_result_regions_years <- airway_05_result_regions_years |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions
 airway_05_result_regions <- nemsqar::airway_05(df = NULL,
@@ -515,7 +515,7 @@ airway_05_result_regions <- nemsqar::airway_05(df = NULL,
 
 # get the confidence intervals
 airway_05_result_regions <- airway_05_result_regions |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # overall
 airway_05_result_overall <- nemsqar::airway_05(df = NULL,
@@ -540,7 +540,7 @@ airway_05_result_overall <- nemsqar::airway_05(df = NULL,
 
 # get the confidence intervals
 airway_05_result_overall <- airway_05_result_overall |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 ### Airway-18 ==================================================================
 
@@ -725,7 +725,7 @@ airway_18_result_year <- nemsqar::airway_18(df = NULL,
 
 # get confidence intervals
 airway_18_result_year <- airway_18_result_year |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions and years
 airway_18_result_regions_years <- nemsqar::airway_18(df = NULL,
@@ -755,7 +755,7 @@ airway_18_result_regions_years <- nemsqar::airway_18(df = NULL,
 
 # get confidence intervals
 airway_18_result_regions_years <- airway_18_result_regions_years |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions
 airway_18_result_regions <- nemsqar::airway_18(df = NULL,
@@ -785,7 +785,7 @@ airway_18_result_regions <- nemsqar::airway_18(df = NULL,
 
 # get confidence intervals
 airway_18_result_regions <- airway_18_result_regions |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # overall
 airway_18_result_overall <- nemsqar::airway_18(df = NULL,
@@ -812,7 +812,7 @@ airway_18_result_overall <- nemsqar::airway_18(df = NULL,
 
 # get confidence intervals
 airway_18_result_overall <- airway_18_result_overall |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 ### Asthma-01 ==================================================================
 
@@ -961,7 +961,7 @@ asthma_01_result_year <- nemsqar::asthma_01(df = NULL,
 
 # get confidence intervals
 asthma_01_result_year <- asthma_01_result_year |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions and years
 asthma_01_result_regions_years <- nemsqar::asthma_01(df = NULL,
@@ -985,7 +985,7 @@ asthma_01_result_regions_years <- nemsqar::asthma_01(df = NULL,
 
 # get confidence intervals
 asthma_01_result_regions_years <- asthma_01_result_regions_years |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions
 asthma_01_result_regions <- nemsqar::asthma_01(df = NULL,
@@ -1009,7 +1009,7 @@ asthma_01_result_regions <- nemsqar::asthma_01(df = NULL,
 
 # get confidence intervals
 asthma_01_result_regions <- asthma_01_result_regions |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # overall
 asthma_01_result_overall <- nemsqar::asthma_01(df = NULL,
@@ -1030,7 +1030,7 @@ asthma_01_result_overall <- nemsqar::asthma_01(df = NULL,
 
 # get confidence intervals
 asthma_01_result_overall <- asthma_01_result_overall |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 ### Hypoglycemia-01 ============================================================
 
@@ -1215,7 +1215,7 @@ hypoglycemia_01_result_year <- nemsqar::hypoglycemia_01(df = NULL,
 
 # get confidence intervals
 hypoglycemia_01_result_year <- hypoglycemia_01_result_year |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions and years
 hypoglycemia_01_result_regions_years <- nemsqar::hypoglycemia_01(df = NULL,
@@ -1245,7 +1245,7 @@ hypoglycemia_01_result_regions_years <- nemsqar::hypoglycemia_01(df = NULL,
 
 # get confidence intervals
 hypoglycemia_01_result_regions_years <- hypoglycemia_01_result_regions_years |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions
 hypoglycemia_01_result_regions <- nemsqar::hypoglycemia_01(df = NULL,
@@ -1275,7 +1275,7 @@ hypoglycemia_01_result_regions <- nemsqar::hypoglycemia_01(df = NULL,
 
 # get confidence intervals
 hypoglycemia_01_result_regions <- hypoglycemia_01_result_regions |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # overall
 hypoglycemia_01_result_overall <- nemsqar::hypoglycemia_01(df = NULL,
@@ -1302,7 +1302,7 @@ hypoglycemia_01_result_overall <- nemsqar::hypoglycemia_01(df = NULL,
 
 # get confidence intervals
 hypoglycemia_01_result_overall <- hypoglycemia_01_result_overall |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 ### Pediatrics-03b =============================================================
 
@@ -1457,7 +1457,7 @@ pediatrics_03b_result_year <- nemsqar::pediatrics_03b(df = NULL,
 
 # get confidence intervals
 pediatrics_03b_result_year <- pediatrics_03b_result_year |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions and years
 pediatrics_03b_result_regions_years <- nemsqar::pediatrics_03b(df = NULL,
@@ -1482,7 +1482,7 @@ pediatrics_03b_result_regions_years <- nemsqar::pediatrics_03b(df = NULL,
 
 # get confidence intervals
 pediatrics_03b_result_regions_years <- pediatrics_03b_result_regions_years |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions
 pediatrics_03b_result_regions <- nemsqar::pediatrics_03b(df = NULL,
@@ -1507,7 +1507,7 @@ pediatrics_03b_result_regions <- nemsqar::pediatrics_03b(df = NULL,
 
 # get confidence intervals
 pediatrics_03b_result_regions <- pediatrics_03b_result_regions |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # overall
 pediatrics_03b_result_overall <- nemsqar::pediatrics_03b(df = NULL,
@@ -1529,7 +1529,7 @@ pediatrics_03b_result_overall <- nemsqar::pediatrics_03b(df = NULL,
 
 # get confidence intervals
 pediatrics_03b_result_overall <- pediatrics_03b_result_overall |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 ### Respiratory-01 =============================================================
 
@@ -1684,7 +1684,7 @@ respiratory_01_result_year <- nemsqar::respiratory_01(df = NULL,
 
 # get confidence intervals
 respiratory_01_result_year <- respiratory_01_result_year |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions and years
 respiratory_01_result_regions_years <- nemsqar::respiratory_01(df = NULL,
@@ -1709,7 +1709,7 @@ respiratory_01_result_regions_years <- nemsqar::respiratory_01(df = NULL,
 
 # get confidence intervals
 respiratory_01_result_regions_years <- respiratory_01_result_regions_years |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions
 respiratory_01_result_regions <- nemsqar::respiratory_01(df = NULL,
@@ -1734,7 +1734,7 @@ respiratory_01_result_regions <- nemsqar::respiratory_01(df = NULL,
 
 # get confidence intervals
 respiratory_01_result_regions <- respiratory_01_result_regions |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # overall
 respiratory_01_result_overall <- nemsqar::respiratory_01(df = NULL,
@@ -1756,7 +1756,7 @@ respiratory_01_result_overall <- nemsqar::respiratory_01(df = NULL,
 
 # get confidence intervals
 respiratory_01_result_overall <- respiratory_01_result_overall |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 ### Respiratory-02 =============================================================
 
@@ -1910,7 +1910,7 @@ respiratory_02_result_year <- nemsqar::respiratory_02(df = NULL,
 
 # get confidence intervals
 respiratory_02_result_year <- respiratory_02_result_year |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions and years
 respiratory_02_result_regions_years <- nemsqar::respiratory_02(df = NULL,
@@ -1935,7 +1935,7 @@ respiratory_02_result_regions_years <- nemsqar::respiratory_02(df = NULL,
 
 # get confidence intervals
 respiratory_02_result_regions_years <- respiratory_02_result_regions_years |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # regions
 respiratory_02_result_regions <- nemsqar::respiratory_02(df = NULL,
@@ -1960,7 +1960,7 @@ respiratory_02_result_regions <- nemsqar::respiratory_02(df = NULL,
 
 # get confidence intervals
 respiratory_02_result_regions <- respiratory_02_result_regions |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
 
 # overall
 respiratory_02_result_overall <- nemsqar::respiratory_02(df = NULL,
@@ -1982,4 +1982,11 @@ respiratory_02_result_overall <- nemsqar::respiratory_02(df = NULL,
 
 # get confidence intervals
 respiratory_02_result_overall <- respiratory_02_result_overall |>
-  binomial_confint(.method = "wilson")
+  nemsqa_binomial_confint(method = "wilson")
+
+
+### Safety-01 ==================================================================
+
+### safety-01 populations ######################################################
+
+### safety-01 results ##########################################################

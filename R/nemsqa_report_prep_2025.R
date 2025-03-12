@@ -28,6 +28,8 @@ library(naniar)
 library(ggrepel)
 library(devtools)
 library(renv)
+library(roxygen2)
+library(roxygen2md)
 
 # Handy Functions ==============================================================
 

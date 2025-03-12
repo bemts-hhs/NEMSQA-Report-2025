@@ -170,7 +170,8 @@ airway_01_pop <- nemsqar::airway_01_population(df = NULL,
                                                eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                                                eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06
-)
+                                               )
+
 # population results for 2021-2024
 airway_01_pop_filter_process <- airway_01_pop$filter_process
 
@@ -196,7 +197,7 @@ airway_01_pop_2021 <- nemsqar::airway_01_population(df = NULL,
                                                     eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                     eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                                                     eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06
-)
+                                                    )
 
 # population results 2021
 airway_01_pop_2021_filter_process <- airway_01_pop_2021$filter_process |>
@@ -224,7 +225,7 @@ airway_01_pop_2022 <- nemsqar::airway_01_population(df = NULL,
                                                     eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                     eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                                                     eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06
-)
+                                                    )
 
 # population results 2022
 airway_01_pop_2022_filter_process <- airway_01_pop_2022$filter_process |>
@@ -252,7 +253,7 @@ airway_01_pop_2023 <- nemsqar::airway_01_population(df = NULL,
                                                     eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                     eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                                                     eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06
-)
+                                                    )
 
 # population results 2023
 airway_01_pop_2023_filter_process <- airway_01_pop_2023$filter_process |>
@@ -280,7 +281,7 @@ airway_01_pop_2024 <- nemsqar::airway_01_population(df = NULL,
                                                     eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                     eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                                                     eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06
-)
+                                                    )
 
 # population results 2024
 airway_01_pop_2024_filter_process <- airway_01_pop_2024$filter_process |>
@@ -291,7 +292,7 @@ airway_01_pop_years <- dplyr::bind_rows(airway_01_pop_2021_filter_process,
                                         airway_01_pop_2022_filter_process,
                                         airway_01_pop_2023_filter_process,
                                         airway_01_pop_2024_filter_process
-)
+                                        )
 
 # plot population trends over time
 airway_01_pop_years |>
@@ -301,7 +302,7 @@ airway_01_pop_years |>
                    vjust_title = 2,
                    vjust_subtitle = 1.5,
                    facets = TRUE
-  )
+                   )
 
 ### airway-01 results ############################################################
 
@@ -328,11 +329,11 @@ airway_01_result_year <- nemsqar::airway_01(df = NULL,
                                             eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                                             eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
                                             .by = INCIDENT_YEAR
-)
+                                            )
 
 # get confidence intervals
 airway_01_result_year <- airway_01_result_year |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 airway_01_result_regions_years <- nemsqar::airway_01(df = NULL,
@@ -357,13 +358,13 @@ airway_01_result_regions_years <- nemsqar::airway_01(df = NULL,
                                                      eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                                                      eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
                                                      .by = c(INCIDENT_YEAR, `Region: Preparedness`)
-) |>
+                                                     ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # get confidence intervals
 airway_01_result_regions_years <- airway_01_result_regions_years |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions
 airway_01_result_regions <- nemsqar::airway_01(df = NULL,
@@ -388,7 +389,7 @@ airway_01_result_regions <- nemsqar::airway_01(df = NULL,
                                                eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                                                eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
                                                .by = `Region: Preparedness`
-) |>
+                                               ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
@@ -414,8 +415,8 @@ airway_01_result_overall <- nemsqar::airway_01(df = NULL,
                                                eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                                                eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06
-)
+                                               )
 
 # get confidence intervals
 airway_01_result_overall <- airway_01_result_overall |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")

@@ -211,7 +211,7 @@ pediatrics_03b_pop <- pediatrics_03b_population(df = NULL,
                                                 eexam_02_col = PATIENT_LENGTH_BASED_COLOR_E_EXAM_02,
                                                 emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                 emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04
-)
+                                                )
 
 # population results for 2021-2024
 pediatrics_03b_pop_filter_process <- pediatrics_03b_pop$filter_process
@@ -232,7 +232,7 @@ pediatrics_03b_pop_2021 <- pediatrics_03b_population(df = NULL,
                                                      eexam_02_col = PATIENT_LENGTH_BASED_COLOR_E_EXAM_02,
                                                      emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                      emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04
-)
+                                                     )
 
 # population results 2021
 pediatrics_03b_pop_filter_process_2021 <- pediatrics_03b_pop_2021$filter_process |>
@@ -254,7 +254,7 @@ pediatrics_03b_pop_2022 <- pediatrics_03b_population(df = NULL,
                                                      eexam_02_col = PATIENT_LENGTH_BASED_COLOR_E_EXAM_02,
                                                      emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                      emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04
-)
+                                                     )
 
 # population results 2022
 pediatrics_03b_pop_filter_process_2022 <- pediatrics_03b_pop_2022$filter_process |>
@@ -276,7 +276,7 @@ pediatrics_03b_pop_2023 <- pediatrics_03b_population(df = NULL,
                                                      eexam_02_col = PATIENT_LENGTH_BASED_COLOR_E_EXAM_02,
                                                      emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                      emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04
-)
+                                                     )
 
 # population results 2023
 pediatrics_03b_pop_filter_process_2023 <- pediatrics_03b_pop_2023$filter_process |>
@@ -298,7 +298,7 @@ pediatrics_03b_pop_2024 <- pediatrics_03b_population(df = NULL,
                                                      eexam_02_col = PATIENT_LENGTH_BASED_COLOR_E_EXAM_02,
                                                      emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                      emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04
-)
+                                                     )
 
 # population results 2024
 pediatrics_03b_pop_filter_process_2024 <- pediatrics_03b_pop_2024$filter_process |>
@@ -309,7 +309,7 @@ pediatrics_03b_pop_years <- dplyr::bind_rows(pediatrics_03b_pop_filter_process_2
                                              pediatrics_03b_pop_filter_process_2022,
                                              pediatrics_03b_pop_filter_process_2023,
                                              pediatrics_03b_pop_filter_process_2024
-)
+                                             )
 
 # plot population trends over time
 pediatrics_03b_pop_years |>
@@ -319,7 +319,7 @@ pediatrics_03b_pop_years |>
                    facets = TRUE,
                    vjust_title = 2,
                    vjust_subtitle = 1.5
-  )
+                   )
 
 ### pediatrics-03b results #####################################################
 
@@ -340,11 +340,11 @@ pediatrics_03b_result_year <- nemsqar::pediatrics_03b(df = NULL,
                                                       emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                       emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04,
                                                       .by = INCIDENT_YEAR
-)
+                                                      )
 
 # get confidence intervals
 pediatrics_03b_result_year <- pediatrics_03b_result_year |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 pediatrics_03b_result_regions_years <- nemsqar::pediatrics_03b(df = NULL,
@@ -363,13 +363,13 @@ pediatrics_03b_result_regions_years <- nemsqar::pediatrics_03b(df = NULL,
                                                                emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                                emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04,
                                                                .by = c(INCIDENT_YEAR, `Region: Preparedness`)
-) |>
+                                                               ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # get confidence intervals
 pediatrics_03b_result_regions_years <- pediatrics_03b_result_regions_years |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions
 pediatrics_03b_result_regions <- nemsqar::pediatrics_03b(df = NULL,
@@ -388,13 +388,13 @@ pediatrics_03b_result_regions <- nemsqar::pediatrics_03b(df = NULL,
                                                          emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                          emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04,
                                                          .by = `Region: Preparedness`
-) |>
+                                                         ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # get confidence intervals
 pediatrics_03b_result_regions <- pediatrics_03b_result_regions |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # overall
 pediatrics_03b_result_overall <- nemsqar::pediatrics_03b(df = NULL,
@@ -412,9 +412,9 @@ pediatrics_03b_result_overall <- nemsqar::pediatrics_03b(df = NULL,
                                                          eexam_02_col = PATIENT_LENGTH_BASED_COLOR_E_EXAM_02,
                                                          emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                          emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04
-)
+                                                         )
 
 # get confidence intervals
 pediatrics_03b_result_overall <- pediatrics_03b_result_overall |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 

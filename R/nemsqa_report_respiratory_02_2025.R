@@ -149,41 +149,42 @@ vitals_table <- vitals_rbind |>
 
 # over all years 2021-2024
 respiratory_02_pop <- respiratory_02_population(df = NULL,
-                                                patient_scene_table = patient_scene_table,
-                                                response_table = response_table,
-                                                vitals_table = vitals_table,
-                                                medications_table = medications_table,
-                                                procedures_table = procedures_table,
-                                                erecord_01_col = FACT_INCIDENT_PK,
+                                                patient_scene_table = respiratory_02_patient_table,
+                                                response_table = respiratory_02_response_table,
+                                                vitals_table = respiratory_02_vitals_table,
+                                                medications_table = respiratory_02_medications_table,
+                                                procedures_table = respiratory_02_procedures_table,
+                                                erecord_01_col = INCIDENT_PATIENT_CARE_REPORT_NUMBER_PCR_E_RECORD_01,
                                                 incident_date_col = INCIDENT_DATE,
                                                 patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                 epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                 epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                 eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
                                                 evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
-)
+                                                emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
+                                                )
 
 # population results for 2021-2024
 respiratory_02_pop_filter_process <- respiratory_02_pop$filter_process
 
 # 2021
 respiratory_02_pop_2021 <- respiratory_02_population(df = NULL,
-                                                     patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                                     patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                                      response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2021),
-                                                     situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                                      vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                                     medications_table = medications_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                                     procedures_table = procedures_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                                      erecord_01_col = FACT_INCIDENT_PK,
                                                      incident_date_col = INCIDENT_DATE,
                                                      patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                      epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                      epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                      eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                                     esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                                     esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                      evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                     evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
-)
+                                                     emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                     eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
+                                                     )
 
 # population results 2021
 respiratory_02_pop_filter_process_2021 <- respiratory_02_pop_2021$filter_process |>
@@ -191,21 +192,21 @@ respiratory_02_pop_filter_process_2021 <- respiratory_02_pop_2021$filter_process
 
 # 2022
 respiratory_02_pop_2022 <- respiratory_02_population(df = NULL,
-                                                     patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                                     patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                                      response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2022),
-                                                     situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                                      vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                                     medications_table = medications_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                                     procedures_table = procedures_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                                      erecord_01_col = FACT_INCIDENT_PK,
                                                      incident_date_col = INCIDENT_DATE,
                                                      patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                      epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                      epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                      eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                                     esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                                     esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                      evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                     evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
-)
+                                                     emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                     eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
+                                                     )
 
 # population results 2022
 respiratory_02_pop_filter_process_2022 <- respiratory_02_pop_2022$filter_process |>
@@ -213,21 +214,21 @@ respiratory_02_pop_filter_process_2022 <- respiratory_02_pop_2022$filter_process
 
 # 2023
 respiratory_02_pop_2023 <- respiratory_02_population(df = NULL,
-                                                     patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                                     patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                                      response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2023),
-                                                     situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                                      vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                                     medications_table = medications_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                                     procedures_table = procedures_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                                      erecord_01_col = FACT_INCIDENT_PK,
                                                      incident_date_col = INCIDENT_DATE,
                                                      patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                      epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                      epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                      eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                                     esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                                     esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                      evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                     evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
-)
+                                                     emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                     eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
+                                                     )
 
 # population results 2023
 respiratory_02_pop_filter_process_2023 <- respiratory_02_pop_2023$filter_process |>
@@ -235,21 +236,21 @@ respiratory_02_pop_filter_process_2023 <- respiratory_02_pop_2023$filter_process
 
 # 2024
 respiratory_02_pop_2024 <- respiratory_02_population(df = NULL,
-                                                     patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                                     patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                                      response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2024),
-                                                     situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                                      vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                                     medications_table = medications_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                                     procedures_table = procedures_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                                      erecord_01_col = FACT_INCIDENT_PK,
                                                      incident_date_col = INCIDENT_DATE,
                                                      patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                      epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                      epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                      eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                                     esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                                     esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                      evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                     evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
-)
+                                                     emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                     eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
+                                                     )
 
 # population results 2024
 respiratory_02_pop_filter_process_2024 <- respiratory_02_pop_2024$filter_process |>
@@ -260,38 +261,38 @@ respiratory_02_pop_years <- dplyr::bind_rows(respiratory_02_pop_filter_process_2
                                              respiratory_02_pop_filter_process_2022,
                                              respiratory_02_pop_filter_process_2023,
                                              respiratory_02_pop_filter_process_2024
-)
+                                             )
 
 # plot population trends over time
 respiratory_02_pop_years |>
   plot_nemsqa_pops(type = "col",
                    wrap_width = 25,
-                   plot_title = "Respiratory-01",
+                   plot_title = "Respiratory-02",
                    facets = TRUE,
                    vjust_title = 2,
                    vjust_subtitle = 1.5
-  )
+                   )
 
 ### respiratory-02 results #####################################################
 
 # year
 respiratory_02_result_year <- nemsqar::respiratory_02(df = NULL,
-                                                      patient_scene_table = patient_scene_table,
+                                                      patient_scene_table = patient_table,
                                                       response_table = response_table,
-                                                      situation_table = situation_table,
                                                       vitals_table = vitals_table,
+                                                      medications_table = medications_table,
+                                                      procedures_table = procedures_table,
                                                       erecord_01_col = FACT_INCIDENT_PK,
                                                       incident_date_col = INCIDENT_DATE,
                                                       patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                       epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                       epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                       eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                                      esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                                      esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                       evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                      evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                                      emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                      eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                       .by = INCIDENT_YEAR
-)
+                                                      )
 
 # get confidence intervals
 respiratory_02_result_year <- respiratory_02_result_year |>
@@ -299,22 +300,22 @@ respiratory_02_result_year <- respiratory_02_result_year |>
 
 # regions and years
 respiratory_02_result_regions_years <- nemsqar::respiratory_02(df = NULL,
-                                                               patient_scene_table = patient_scene_table,
+                                                               patient_scene_table = patient_table,
                                                                response_table = response_table,
-                                                               situation_table = situation_table,
                                                                vitals_table = vitals_table,
+                                                               medications_table = medications_table,
+                                                               procedures_table = procedures_table,
                                                                erecord_01_col = FACT_INCIDENT_PK,
                                                                incident_date_col = INCIDENT_DATE,
                                                                patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                                epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                                epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                                eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                                               esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                                               esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                                evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                               evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                                               emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                               eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                                .by = c(INCIDENT_YEAR, `Region: Preparedness`)
-) |>
+                                                               ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
@@ -324,22 +325,22 @@ respiratory_02_result_regions_years <- respiratory_02_result_regions_years |>
 
 # regions
 respiratory_02_result_regions <- nemsqar::respiratory_02(df = NULL,
-                                                         patient_scene_table = patient_scene_table,
+                                                         patient_scene_table = patient_table,
                                                          response_table = response_table,
-                                                         situation_table = situation_table,
                                                          vitals_table = vitals_table,
+                                                         medications_table = medications_table,
+                                                         procedures_table = procedures_table,
                                                          erecord_01_col = FACT_INCIDENT_PK,
                                                          incident_date_col = INCIDENT_DATE,
                                                          patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                          epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                          epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                          eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                                         esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                                         esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                          evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                         evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                                         emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                         eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                          .by = `Region: Preparedness`
-) |>
+                                                         ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
@@ -349,21 +350,21 @@ respiratory_02_result_regions <- respiratory_02_result_regions |>
 
 # overall
 respiratory_02_result_overall <- nemsqar::respiratory_02(df = NULL,
-                                                         patient_scene_table = patient_scene_table,
+                                                         patient_scene_table = patient_table,
                                                          response_table = response_table,
-                                                         situation_table = situation_table,
                                                          vitals_table = vitals_table,
+                                                         medications_table = medications_table,
+                                                         procedures_table = procedures_table,
                                                          erecord_01_col = FACT_INCIDENT_PK,
                                                          incident_date_col = INCIDENT_DATE,
                                                          patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                          epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                          epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                          eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                                         esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                                         esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                          evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                         evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
-)
+                                                         emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                         eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
+                                                         )
 
 # get confidence intervals
 respiratory_02_result_overall <- respiratory_02_result_overall |>

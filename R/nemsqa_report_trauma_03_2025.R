@@ -1,7 +1,7 @@
-### IOWA NEMSQA REPORT AIRWAY-18 2025 ------------------------------------------
+### IOWA NEMSQA REPORT TRAUMA-03 2025 ------------------------------------
 
 ###_____________________________________________________________________________
-# this script will contain all reporting calculations for Airway-18
+# this script will contain all reporting calculations for Trauma-03
 # use nemsqa_report_prep_2025.R to get critical functions into memory
 ###_____________________________________________________________________________
 # assume that nemsqa_report_prep_2025.R was already ran to
@@ -12,21 +12,21 @@
 
 # tables imported in alphabetical order
 
-### airway tables ################################################################
-airway_2021 <- import_nemsqa_data(table = "airway", year = 2021)
-airway_2022 <- import_nemsqa_data(table = "airway", year = 2022)
-airway_2023 <- import_nemsqa_data(table = "airway", year = 2023)
-airway_2024 <- import_nemsqa_data(table = "airway", year = 2024)
+### disposition tables ###########################################################
+disposition_2021 <- import_nemsqa_data(table = "disposition", year = 2021)
+disposition_2022 <- import_nemsqa_data(table = "disposition", year = 2022)
+disposition_2023 <- import_nemsqa_data(table = "disposition", year = 2023)
+disposition_2024 <- import_nemsqa_data(table = "disposition", year = 2024)
 
-# bind rows for the airway table
-airway_rbind <- dplyr::bind_rows(airway_2021,
-                                 airway_2022,
-                                 airway_2023,
-                                 airway_2024
+# bind rows for the disposition table
+disposition_rbind <- dplyr::bind_rows(disposition_2021,
+                                      disposition_2022,
+                                      disposition_2023,
+                                      disposition_2024
 )
 
-# set up airway table for manipulations
-airway_table <- airway_rbind |>
+# set up the disposition table for manipulations
+disposition_table <- disposition_rbind |>
   clean_names_dates_data()
 
 ### patient/scene tables #########################################################
@@ -89,25 +89,6 @@ patient_scene_table <- patient_scene_clean |>
                        zip_column = PATIENT_HOME_POSTAL_CODE_E_PATIENT_09
   )
 
-
-
-### procedures tables ############################################################
-procedures_2021 <- import_nemsqa_data(table = "procedures", year = 2021)
-procedures_2022 <- import_nemsqa_data(table = "procedures", year = 2022)
-procedures_2023 <- import_nemsqa_data(table = "procedures", year = 2023)
-procedures_2024 <- import_nemsqa_data(table = "procedures", year = 2024)
-
-# bind rows for the procedures table
-procedures_rbind <- dplyr::bind_rows(procedures_2021,
-                                     procedures_2022,
-                                     procedures_2023,
-                                     procedures_2024
-)
-
-# set up procedures table for manipulations
-procedures_table <- procedures_rbind |>
-  clean_names_dates_data()
-
 ### response tables ##############################################################
 response_2021 <- import_nemsqa_data(table = "response", year = 2021)
 response_2022 <- import_nemsqa_data(table = "response", year = 2022)
@@ -123,6 +104,23 @@ response_rbind <- dplyr::bind_rows(response_2021,
 
 # set up response table for manipulations
 response_table <- response_rbind |>
+  clean_names_dates_data()
+
+### situation tables #############################################################
+situation_2021 <- import_nemsqa_data(table = "situation", year = 2021)
+situation_2022 <- import_nemsqa_data(table = "situation", year = 2022)
+situation_2023 <- import_nemsqa_data(table = "situation", year = 2023)
+situation_2024 <- import_nemsqa_data(table = "situation", year = 2024)
+
+# bind rows for the situation table
+situation_rbind <- dplyr::bind_rows(situation_2021,
+                                    situation_2022,
+                                    situation_2023,
+                                    situation_2024
+)
+
+# set up situation table for manipulations
+situation_table <- situation_rbind |>
   clean_names_dates_data()
 
 ### vitals tables ################################################################
@@ -142,277 +140,285 @@ vitals_rbind <- dplyr::bind_rows(vitals_2021,
 vitals_table <- vitals_rbind |>
   clean_names_dates_data()
 
+
 ### CALCULATIONS ---------------------------------------------------------------
 
-### Airway-18 ==================================================================
+### Trauma-03 ==================================================================
 
-### airway-18 populations ########################################################
+### trauma-03 populations ######################################################
 
 # over all years 2021-2024
-airway_18_pop <- airway_18_population(df = NULL,
-                                      patient_scene_table = patient_scene_table,
+trauma_03_pop <- trauma_03_population(df = NULL,
+                                      patient_scene_table = patient_table,
                                       response_table = response_table,
-                                      procedures_table = procedures_table,
+                                      situation_table = situation_table,
+                                      disposition_table = disposition_table,
                                       vitals_table = vitals_table,
-                                      airway_table = airway_table,
                                       erecord_01_col = FACT_INCIDENT_PK,
                                       incident_date_col = INCIDENT_DATE,
                                       patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                       epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                       epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                      esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                       eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                      eprocedures_01_col = PROCEDURE_PERFORMED_DATE_TIME_E_PROCEDURES_01,
-                                      eprocedures_02_col = PROCEDURE_PERFORMED_PRIOR_TO_EMS_CARE_E_PROCEDURES_02,
-                                      eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
-                                      eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
-                                      eairway_02_col = AIRWAY_DEVICE_PLACEMENT_CONFIRMATION_DATE_TIME_E_AIRWAY_02,
-                                      eairway_04_col = PATIENT_AIRWAY_DEVICE_PLACEMENT_CONFIRMED_METHOD_LIST_E_AIRWAY_04,
+                                      edisposition_28_col = PATIENT_EVALUATION_CARE_3_4_IT_DISPOSITION_100_3_5_E_DISPOSITION_28,
+                                      transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                    DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                    ),
+                                      evitals_27_initial_col = NULL,
+                                      evitals_27_last_col = NULL,
                                       evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
-                                      evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
+                                      evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27
                                       )
 
 # population results for 2021-2024
-airway_18_pop_filter_process <- airway_18_pop$filter_process
+trauma_03_pop_filter_process <- trauma_03_pop$filter_process
 
 # 2021
-airway_18_pop_2021 <- airway_18_population(df = NULL,
-                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+trauma_03_pop_2021 <- trauma_03_population(df = NULL,
+                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2021),
-                                           procedures_table = procedures_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                           situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                           disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2021),
-                                           airway_table = airway_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            erecord_01_col = FACT_INCIDENT_PK,
                                            incident_date_col = INCIDENT_DATE,
                                            patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                            epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                            epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                           esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                            eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                           eprocedures_01_col = PROCEDURE_PERFORMED_DATE_TIME_E_PROCEDURES_01,
-                                           eprocedures_02_col = PROCEDURE_PERFORMED_PRIOR_TO_EMS_CARE_E_PROCEDURES_02,
-                                           eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
-                                           eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
-                                           eairway_02_col = AIRWAY_DEVICE_PLACEMENT_CONFIRMATION_DATE_TIME_E_AIRWAY_02,
-                                           eairway_04_col = PATIENT_AIRWAY_DEVICE_PLACEMENT_CONFIRMED_METHOD_LIST_E_AIRWAY_04,
+                                           edisposition_28_col = PATIENT_EVALUATION_CARE_3_4_IT_DISPOSITION_100_3_5_E_DISPOSITION_28,
+                                           transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                         DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                         ),
+                                           evitals_27_initial_col = NULL,
+                                           evitals_27_last_col = NULL,
                                            evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
-                                           evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
+                                           evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27
                                            )
 
 # population results 2021
-airway_18_pop_filter_process_2021 <- airway_18_pop_2021$filter_process |>
+trauma_03_pop_filter_process_2021 <- trauma_03_pop_2021$filter_process |>
   dplyr::mutate(YEAR = 2021)
 
 # 2022
-airway_18_pop_2022 <- airway_18_population(df = NULL,
-                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+trauma_03_pop_2022 <- trauma_03_population(df = NULL,
+                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2022),
-                                           procedures_table = procedures_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                           situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                           disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2022),
-                                           airway_table = airway_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            erecord_01_col = FACT_INCIDENT_PK,
                                            incident_date_col = INCIDENT_DATE,
                                            patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                            epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                            epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                           esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                            eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                           eprocedures_01_col = PROCEDURE_PERFORMED_DATE_TIME_E_PROCEDURES_01,
-                                           eprocedures_02_col = PROCEDURE_PERFORMED_PRIOR_TO_EMS_CARE_E_PROCEDURES_02,
-                                           eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
-                                           eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
-                                           eairway_02_col = AIRWAY_DEVICE_PLACEMENT_CONFIRMATION_DATE_TIME_E_AIRWAY_02,
-                                           eairway_04_col = PATIENT_AIRWAY_DEVICE_PLACEMENT_CONFIRMED_METHOD_LIST_E_AIRWAY_04,
+                                           edisposition_28_col = PATIENT_EVALUATION_CARE_3_4_IT_DISPOSITION_100_3_5_E_DISPOSITION_28,
+                                           transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                         DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                         ),
+                                           evitals_27_initial_col = NULL,
+                                           evitals_27_last_col = NULL,
                                            evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
-                                           evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
+                                           evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27
                                            )
 
 # population results 2022
-airway_18_pop_filter_process_2022 <- airway_18_pop_2022$filter_process |>
+trauma_03_pop_filter_process_2022 <- trauma_03_pop_2022$filter_process |>
   dplyr::mutate(YEAR = 2022)
 
 # 2023
-airway_18_pop_2023 <- airway_18_population(df = NULL,
-                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+trauma_03_pop_2023 <- trauma_03_population(df = NULL,
+                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2023),
-                                           procedures_table = procedures_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                           situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                           disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2023),
-                                           airway_table = airway_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            erecord_01_col = FACT_INCIDENT_PK,
                                            incident_date_col = INCIDENT_DATE,
                                            patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                            epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                            epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                           esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                            eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                           eprocedures_01_col = PROCEDURE_PERFORMED_DATE_TIME_E_PROCEDURES_01,
-                                           eprocedures_02_col = PROCEDURE_PERFORMED_PRIOR_TO_EMS_CARE_E_PROCEDURES_02,
-                                           eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
-                                           eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
-                                           eairway_02_col = AIRWAY_DEVICE_PLACEMENT_CONFIRMATION_DATE_TIME_E_AIRWAY_02,
-                                           eairway_04_col = PATIENT_AIRWAY_DEVICE_PLACEMENT_CONFIRMED_METHOD_LIST_E_AIRWAY_04,
+                                           edisposition_28_col = PATIENT_EVALUATION_CARE_3_4_IT_DISPOSITION_100_3_5_E_DISPOSITION_28,
+                                           transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                         DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                         ),
+                                           evitals_27_initial_col = NULL,
+                                           evitals_27_last_col = NULL,
                                            evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
-                                           evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
+                                           evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27
                                            )
 
 # population results 2023
-airway_18_pop_filter_process_2023 <- airway_18_pop_2023$filter_process |>
+trauma_03_pop_filter_process_2023 <- trauma_03_pop_2023$filter_process |>
   dplyr::mutate(YEAR = 2023)
 
 # 2024
-airway_18_pop_2024 <- airway_18_population(df = NULL,
-                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+trauma_03_pop_2024 <- trauma_03_population(df = NULL,
+                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2024),
-                                           procedures_table = procedures_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                           situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                           disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2024),
-                                           airway_table = airway_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            erecord_01_col = FACT_INCIDENT_PK,
                                            incident_date_col = INCIDENT_DATE,
                                            patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                            epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                            epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                           esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                            eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                           eprocedures_01_col = PROCEDURE_PERFORMED_DATE_TIME_E_PROCEDURES_01,
-                                           eprocedures_02_col = PROCEDURE_PERFORMED_PRIOR_TO_EMS_CARE_E_PROCEDURES_02,
-                                           eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
-                                           eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
-                                           eairway_02_col = AIRWAY_DEVICE_PLACEMENT_CONFIRMATION_DATE_TIME_E_AIRWAY_02,
-                                           eairway_04_col = PATIENT_AIRWAY_DEVICE_PLACEMENT_CONFIRMED_METHOD_LIST_E_AIRWAY_04,
+                                           edisposition_28_col = PATIENT_EVALUATION_CARE_3_4_IT_DISPOSITION_100_3_5_E_DISPOSITION_28,
+                                           transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                         DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                         ),
+                                           evitals_27_initial_col = NULL,
+                                           evitals_27_last_col = NULL,
                                            evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
-                                           evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
+                                           evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27
                                            )
 
 # population results 2024
-airway_18_pop_filter_process_2024 <- airway_18_pop_2024$filter_process |>
+trauma_03_pop_filter_process_2024 <- trauma_03_pop_2024$filter_process |>
   dplyr::mutate(YEAR = 2024)
 
 # airway-18 populations over the years
-airway_18_pop_years <- dplyr::bind_rows(airway_18_pop_filter_process_2021,
-                                        airway_18_pop_filter_process_2022,
-                                        airway_18_pop_filter_process_2023,
-                                        airway_18_pop_filter_process_2024
+trauma_03_pop_years <- dplyr::bind_rows(trauma_03_pop_filter_process_2021,
+                                        trauma_03_pop_filter_process_2022,
+                                        trauma_03_pop_filter_process_2023,
+                                        trauma_03_pop_filter_process_2024
                                         )
 
 # plot population trends over time
-airway_18_pop_years |>
+trauma_03_pop_years |>
   plot_nemsqa_pops(type = "col",
                    wrap_width = 25,
-                   plot_title = "Airway-18",
+                   plot_title = "Trauma-03",
                    facets = TRUE,
                    vjust_title = 2,
                    vjust_subtitle = 1.5
                    )
 
-### airway-18 results ############################################################
+
+### trauma-03 results ##########################################################
 
 # year
-airway_18_result_year <- nemsqar::airway_18(df = NULL,
-                                            patient_scene_table = patient_scene_table,
+trauma_03_result_year <- nemsqar::trauma_03(df = NULL,
+                                            patient_scene_table = patient_table,
                                             response_table = response_table,
-                                            procedures_table = procedures_table,
+                                            situation_table = situation_table,
+                                            disposition_table = disposition_table,
                                             vitals_table = vitals_table,
-                                            airway_table = airway_table,
                                             erecord_01_col = FACT_INCIDENT_PK,
                                             incident_date_col = INCIDENT_DATE,
                                             patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                             epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                             epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                            esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                             eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                            eprocedures_01_col = PROCEDURE_PERFORMED_DATE_TIME_E_PROCEDURES_01,
-                                            eprocedures_02_col = PROCEDURE_PERFORMED_PRIOR_TO_EMS_CARE_E_PROCEDURES_02,
-                                            eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
-                                            eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
-                                            eairway_02_col = AIRWAY_DEVICE_PLACEMENT_CONFIRMATION_DATE_TIME_E_AIRWAY_02,
-                                            eairway_04_col = PATIENT_AIRWAY_DEVICE_PLACEMENT_CONFIRMED_METHOD_LIST_E_AIRWAY_04,
+                                            edisposition_28_col = PATIENT_EVALUATION_CARE_3_4_IT_DISPOSITION_100_3_5_E_DISPOSITION_28,
+                                            transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                          DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                          ),
+                                            evitals_27_initial_col = NULL,
+                                            evitals_27_last_col = NULL,
                                             evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
-                                            evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                            evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27,
                                             .by = INCIDENT_YEAR
                                             )
 
 # get confidence intervals
-airway_18_result_year <- airway_18_result_year |>
+trauma_03_result_year <- trauma_03_result_year |>
   nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
-airway_18_result_regions_years <- nemsqar::airway_18(df = NULL,
-                                                     patient_scene_table = patient_scene_table,
+trauma_03_result_regions_years <- nemsqar::trauma_03(df = NULL,
+                                                     patient_scene_table = patient_table,
                                                      response_table = response_table,
-                                                     procedures_table = procedures_table,
+                                                     situation_table = situation_table,
+                                                     disposition_table = disposition_table,
                                                      vitals_table = vitals_table,
-                                                     airway_table = airway_table,
                                                      erecord_01_col = FACT_INCIDENT_PK,
                                                      incident_date_col = INCIDENT_DATE,
                                                      patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                      epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                      epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                     esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                                      eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                                     eprocedures_01_col = PROCEDURE_PERFORMED_DATE_TIME_E_PROCEDURES_01,
-                                                     eprocedures_02_col = PROCEDURE_PERFORMED_PRIOR_TO_EMS_CARE_E_PROCEDURES_02,
-                                                     eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
-                                                     eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
-                                                     eairway_02_col = AIRWAY_DEVICE_PLACEMENT_CONFIRMATION_DATE_TIME_E_AIRWAY_02,
-                                                     eairway_04_col = PATIENT_AIRWAY_DEVICE_PLACEMENT_CONFIRMED_METHOD_LIST_E_AIRWAY_04,
+                                                     edisposition_28_col = PATIENT_EVALUATION_CARE_3_4_IT_DISPOSITION_100_3_5_E_DISPOSITION_28,
+                                                     transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                                   DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112),
+                                                     evitals_27_initial_col = NULL,
+                                                     evitals_27_last_col = NULL,
                                                      evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
-                                                     evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                                     evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27,
                                                      .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                      ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # get confidence intervals
-airway_18_result_regions_years <- airway_18_result_regions_years |>
+trauma_03_result_regions_years <- trauma_03_result_regions_years |>
   nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions
-airway_18_result_regions <- nemsqar::airway_18(df = NULL,
-                                               patient_scene_table = patient_scene_table,
+trauma_03_result_regions <- nemsqar::trauma_03(df = NULL,
+                                               patient_scene_table = patient_table,
                                                response_table = response_table,
-                                               procedures_table = procedures_table,
+                                               situation_table = situation_table,
+                                               disposition_table = disposition_table,
                                                vitals_table = vitals_table,
-                                               airway_table = airway_table,
                                                erecord_01_col = FACT_INCIDENT_PK,
                                                incident_date_col = INCIDENT_DATE,
                                                patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                               esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
+                                               evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
+                                               evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                               eprocedures_01_col = PROCEDURE_PERFORMED_DATE_TIME_E_PROCEDURES_01,
-                                               eprocedures_02_col = PROCEDURE_PERFORMED_PRIOR_TO_EMS_CARE_E_PROCEDURES_02,
-                                               eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
-                                               eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
-                                               eairway_02_col = AIRWAY_DEVICE_PLACEMENT_CONFIRMATION_DATE_TIME_E_AIRWAY_02,
-                                               eairway_04_col = PATIENT_AIRWAY_DEVICE_PLACEMENT_CONFIRMED_METHOD_LIST_E_AIRWAY_04,
-                                               evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
-                                               evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                               edisposition_28_col = PATIENT_EVALUATION_CARE_3_4_IT_DISPOSITION_100_3_5_E_DISPOSITION_28,
+                                               transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                             DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                             ),
+                                               evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27,
                                                .by = `Region: Preparedness`
                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # get confidence intervals
-airway_18_result_regions <- airway_18_result_regions |>
+trauma_03_result_regions <- trauma_03_result_regions |>
   nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # overall
-airway_18_result_overall <- nemsqar::airway_18(df = NULL,
-                                               patient_scene_table = patient_scene_table,
+trauma_03_result_overall <- nemsqar::trauma_03(df = NULL,
+                                               patient_scene_table = patient_table,
                                                response_table = response_table,
-                                               procedures_table = procedures_table,
+                                               situation_table = situation_table,
+                                               disposition_table = disposition_table,
                                                vitals_table = vitals_table,
-                                               airway_table = airway_table,
                                                erecord_01_col = FACT_INCIDENT_PK,
                                                incident_date_col = INCIDENT_DATE,
                                                patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                               esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                                eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                               eprocedures_01_col = PROCEDURE_PERFORMED_DATE_TIME_E_PROCEDURES_01,
-                                               eprocedures_02_col = PROCEDURE_PERFORMED_PRIOR_TO_EMS_CARE_E_PROCEDURES_02,
-                                               eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
-                                               eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
-                                               eairway_02_col = AIRWAY_DEVICE_PLACEMENT_CONFIRMATION_DATE_TIME_E_AIRWAY_02,
-                                               eairway_04_col = PATIENT_AIRWAY_DEVICE_PLACEMENT_CONFIRMED_METHOD_LIST_E_AIRWAY_04,
+                                               edisposition_28_col = PATIENT_EVALUATION_CARE_3_4_IT_DISPOSITION_100_3_5_E_DISPOSITION_28,
+                                               transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                             DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                             ),
+                                               evitals_27_initial_col = NULL,
+                                               evitals_27_last_col = NULL,
                                                evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
-                                               evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
+                                               evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27
                                                )
 
 # get confidence intervals
-airway_18_result_overall <- airway_18_result_overall |>
+trauma_03_result_overall <- trauma_03_result_overall |>
   nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
-

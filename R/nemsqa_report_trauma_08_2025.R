@@ -1,7 +1,7 @@
-### IOWA NEMSQA REPORT ASTHMA-01 2025 ------------------------------------------
+### IOWA NEMSQA REPORT TRAUMA-08 2025 ------------------------------------
 
 ###_____________________________________________________________________________
-# this script will contain all reporting calculations for Asthma-01
+# this script will contain all reporting calculations for Trauma-08
 # use nemsqa_report_prep_2025.R to get critical functions into memory
 ###_____________________________________________________________________________
 # assume that nemsqa_report_prep_2025.R was already ran to
@@ -11,22 +11,21 @@
 ### DATA -----------------------------------------------------------------------
 
 # tables imported in alphabetical order
+### disposition tables ###########################################################
+disposition_2021 <- import_nemsqa_data(table = "disposition", year = 2021)
+disposition_2022 <- import_nemsqa_data(table = "disposition", year = 2022)
+disposition_2023 <- import_nemsqa_data(table = "disposition", year = 2023)
+disposition_2024 <- import_nemsqa_data(table = "disposition", year = 2024)
 
-### medications tables ###########################################################
-medications_2021 <- import_nemsqa_data(table = "medications", year = 2021)
-medications_2022 <- import_nemsqa_data(table = "medications", year = 2022)
-medications_2023 <- import_nemsqa_data(table = "medications", year = 2023)
-medications_2024 <- import_nemsqa_data(table = "medications", year = 2024)
-
-# bind rows for the medications table
-medications_rbind <- dplyr::bind_rows(medications_2021,
-                                      medications_2022,
-                                      medications_2023,
-                                      medications_2024
+# bind rows for the disposition table
+disposition_rbind <- dplyr::bind_rows(disposition_2021,
+                                      disposition_2022,
+                                      disposition_2023,
+                                      disposition_2024
 )
 
-# set up the medications table for manipulations
-medications_table <- medications_rbind |>
+# set up the disposition table for manipulations
+disposition_table <- disposition_rbind |>
   clean_names_dates_data()
 
 ### patient/scene tables #########################################################
@@ -41,7 +40,7 @@ patient_scene_rbind <- dplyr::bind_rows(patient_scene_2021,
                                         patient_scene_2022,
                                         patient_scene_2023,
                                         patient_scene_2024
-)
+                                        )
 
 # set up patient/scene table for manipulations
 patient_scene_clean <- patient_scene_rbind |>
@@ -89,8 +88,6 @@ patient_scene_table <- patient_scene_clean |>
                        zip_column = PATIENT_HOME_POSTAL_CODE_E_PATIENT_09
   )
 
-
-
 ### response tables ##############################################################
 response_2021 <- import_nemsqa_data(table = "response", year = 2021)
 response_2022 <- import_nemsqa_data(table = "response", year = 2022)
@@ -125,224 +122,284 @@ situation_rbind <- dplyr::bind_rows(situation_2021,
 situation_table <- situation_rbind |>
   clean_names_dates_data()
 
+### vitals tables ################################################################
+vitals_2021 <- import_nemsqa_data(table = "vitals", year = 2021)
+vitals_2022 <- import_nemsqa_data(table = "vitals", year = 2022)
+vitals_2023 <- import_nemsqa_data(table = "vitals", year = 2023)
+vitals_2024 <- import_nemsqa_data(table = "vitals", year = 2024)
+
+# bind rows for the vitals table
+vitals_rbind <- dplyr::bind_rows(vitals_2021,
+                                 vitals_2022,
+                                 vitals_2023,
+                                 vitals_2024
+)
+
+# set up vitals table for manipulations
+vitals_table <- vitals_rbind |>
+  clean_names_dates_data()
 
 ### CALCULATIONS ---------------------------------------------------------------
 
-### Asthma-01 ==================================================================
+### Trauma-08 ==================================================================
 
-### asthma-01 populations ########################################################
+### trauma-08 populations ######################################################
 
 # over all years 2021-2024
-asthma_01_pop <- asthma_01_population(df = NULL,
-                                      patient_scene_table = patient_scene_table,
+trauma_08_pop <- trauma_08_population(df = NULL,
+                                      patient_scene_table = patient_table,
                                       response_table = response_table,
                                       situation_table = situation_table,
-                                      medications_table = medications_table,
+                                      disposition_table = disposition_table,
+                                      vitals_table = vitals_table,
                                       erecord_01_col = FACT_INCIDENT_PK,
                                       incident_date_col = INCIDENT_DATE,
                                       patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                       epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                       epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                      esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                       eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                      esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                      esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
-                                      emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03
+                                      transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                    DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                    ),
+                                      evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+                                      evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                      evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23
                                       )
 
 # population results for 2021-2024
-asthma_01_pop_filter_process <- asthma_01_pop$filter_process
+trauma_08_pop_filter_process <- trauma_08_pop$filter_process
 
 # 2021
-asthma_01_pop_2021 <- asthma_01_population(df = NULL,
-                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+trauma_08_pop_2021 <- trauma_08_population(df = NULL,
+                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2021),
-                                           medications_table = medications_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                           disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                           vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            erecord_01_col = FACT_INCIDENT_PK,
                                            incident_date_col = INCIDENT_DATE,
                                            patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                            epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                            epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                           esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                            eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                           esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                           esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
-                                           emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03
+                                           transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                         DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                         ),
+                                           evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+                                           evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                           evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23
                                            )
 
 # population results 2021
-asthma_01_pop_filter_process_2021 <- asthma_01_pop_2021$filter_process |>
+trauma_08_pop_filter_process_2021 <- trauma_08_pop_2021$filter_process |>
   dplyr::mutate(YEAR = 2021)
 
 # 2022
-asthma_01_pop_2022 <- asthma_01_population(df = NULL,
-                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+trauma_08_pop_2022 <- trauma_08_population(df = NULL,
+                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2022),
-                                           medications_table = medications_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                           disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                           vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            erecord_01_col = FACT_INCIDENT_PK,
                                            incident_date_col = INCIDENT_DATE,
                                            patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                            epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                            epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                           esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                            eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                           esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                           esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
-                                           emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03
+                                           transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                         DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                         ),
+                                           evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+                                           evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                           evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23
                                            )
 
 # population results 2022
-asthma_01_pop_filter_process_2022 <- asthma_01_pop_2022$filter_process |>
+trauma_08_pop_filter_process_2022 <- trauma_08_pop_2022$filter_process |>
   dplyr::mutate(YEAR = 2022)
 
 # 2023
-asthma_01_pop_2023 <- asthma_01_population(df = NULL,
-                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+trauma_08_pop_2023 <- trauma_08_population(df = NULL,
+                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2023),
-                                           medications_table = medications_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                           disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                           vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            erecord_01_col = FACT_INCIDENT_PK,
                                            incident_date_col = INCIDENT_DATE,
                                            patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                            epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                            epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                           esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                            eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                           esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                           esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
-                                           emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03
+                                           transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                         DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                         ),
+                                           evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+                                           evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                           evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23
                                            )
 
 # population results 2023
-asthma_01_pop_filter_process_2023 <- asthma_01_pop_2023$filter_process |>
+trauma_08_pop_filter_process_2023 <- trauma_08_pop_2023$filter_process |>
   dplyr::mutate(YEAR = 2023)
 
 # 2024
-asthma_01_pop_2024 <- asthma_01_population(df = NULL,
-                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+trauma_08_pop_2024 <- trauma_08_population(df = NULL,
+                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2024),
-                                           medications_table = medications_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                           disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                           vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            erecord_01_col = FACT_INCIDENT_PK,
                                            incident_date_col = INCIDENT_DATE,
                                            patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                            epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                            epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                           esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                            eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                           esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                           esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
-                                           emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03
+                                           transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                         DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                         ),
+                                           evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+                                           evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                           evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23
                                            )
 
 # population results 2024
-asthma_01_pop_filter_process_2024 <- asthma_01_pop_2024$filter_process |>
+trauma_08_pop_filter_process_2024 <- trauma_08_pop_2024$filter_process |>
   dplyr::mutate(YEAR = 2024)
 
 # airway-18 populations over the years
-asthma_01_pop_years <- dplyr::bind_rows(asthma_01_pop_filter_process_2021,
-                                        asthma_01_pop_filter_process_2022,
-                                        asthma_01_pop_filter_process_2023,
-                                        asthma_01_pop_filter_process_2024
+trauma_08_pop_years <- dplyr::bind_rows(trauma_08_pop_filter_process_2021,
+                                        trauma_08_pop_filter_process_2022,
+                                        trauma_08_pop_filter_process_2023,
+                                        trauma_08_pop_filter_process_2024
                                         )
 
 # plot population trends over time
-asthma_01_pop_years |>
+trauma_08_pop_years |>
   plot_nemsqa_pops(type = "col",
                    wrap_width = 25,
-                   plot_title = "Asthma-01",
+                   plot_title = "Trauma-08",
                    facets = TRUE,
                    vjust_title = 2,
                    vjust_subtitle = 1.5
                    )
 
-### asthma-01 results ############################################################
+### trauma-08 results ##########################################################
 
 # year
-asthma_01_result_year <- nemsqar::asthma_01(df = NULL,
-                                            patient_scene_table = patient_scene_table,
+trauma_08_result_year <- nemsqar::trauma_08(df = NULL,
+                                            patient_scene_table = patient_table,
                                             response_table = response_table,
                                             situation_table = situation_table,
-                                            medications_table = medications_table,
+                                            disposition_table = disposition_table,
+                                            vitals_table = vitals_table,
                                             erecord_01_col = FACT_INCIDENT_PK,
                                             incident_date_col = INCIDENT_DATE,
                                             patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                             epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                             epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                            esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                             eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                            esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                            esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
-                                            emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                            transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                          DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                          ),
+                                            evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+                                            evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                            evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
                                             .by = INCIDENT_YEAR
                                             )
 
 # get confidence intervals
-asthma_01_result_year <- asthma_01_result_year |>
+trauma_08_result_year <- trauma_08_result_year |>
   nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
-asthma_01_result_regions_years <- nemsqar::asthma_01(df = NULL,
-                                                     patient_scene_table = patient_scene_table,
+trauma_08_result_regions_years <- nemsqar::trauma_08(df = NULL,
+                                                     patient_scene_table = patient_table,
                                                      response_table = response_table,
                                                      situation_table = situation_table,
-                                                     medications_table = medications_table,
+                                                     disposition_table = disposition_table,
+                                                     vitals_table = vitals_table,
                                                      erecord_01_col = FACT_INCIDENT_PK,
                                                      incident_date_col = INCIDENT_DATE,
                                                      patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                      epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                      epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                     esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                                      eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                                     esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                                     esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
-                                                     emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                     transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                                   DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                                   ),
+                                                     evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+                                                     evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                                     evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
                                                      .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                      ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # get confidence intervals
-asthma_01_result_regions_years <- asthma_01_result_regions_years |>
+trauma_08_result_regions_years <- trauma_08_result_regions_years |>
   nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions
-asthma_01_result_regions <- nemsqar::asthma_01(df = NULL,
-                                               patient_scene_table = patient_scene_table,
+trauma_08_result_regions <- nemsqar::trauma_08(df = NULL,
+                                               patient_scene_table = patient_table,
                                                response_table = response_table,
                                                situation_table = situation_table,
-                                               medications_table = medications_table,
+                                               disposition_table = disposition_table,
+                                               vitals_table = vitals_table,
                                                erecord_01_col = FACT_INCIDENT_PK,
                                                incident_date_col = INCIDENT_DATE,
                                                patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                               esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                                eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                               esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                               esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
-                                               emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                               transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                             DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                             ),
+                                               evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+                                               evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                               evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
                                                .by = `Region: Preparedness`
                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # get confidence intervals
-asthma_01_result_regions <- asthma_01_result_regions |>
+trauma_08_result_regions <- trauma_08_result_regions |>
   nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # overall
-asthma_01_result_overall <- nemsqar::asthma_01(df = NULL,
-                                               patient_scene_table = patient_scene_table,
+trauma_08_result_overall <- nemsqar::trauma_08(df = NULL,
+                                               patient_scene_table = patient_table,
                                                response_table = response_table,
                                                situation_table = situation_table,
-                                               medications_table = medications_table,
+                                               disposition_table = disposition_table,
+                                               vitals_table = vitals_table,
                                                erecord_01_col = FACT_INCIDENT_PK,
                                                incident_date_col = INCIDENT_DATE,
                                                patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
                                                epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                               esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
                                                eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                               esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                               esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
-                                               emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03
+                                               transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                             DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                             ),
+                                               evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+                                               evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                               evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23
                                                )
 
 # get confidence intervals
-asthma_01_result_overall <- asthma_01_result_overall |>
+trauma_08_result_overall <- trauma_08_result_overall |>
   nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
-

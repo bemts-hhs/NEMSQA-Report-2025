@@ -144,8 +144,8 @@ respiratory_01_pop <- respiratory_01_population(df = NULL,
                                                 esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                 esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                 evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
-)
+                                                evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14
+                                                )
 
 # population results for 2021-2024
 respiratory_01_pop_filter_process <- respiratory_01_pop$filter_process
@@ -165,8 +165,8 @@ respiratory_01_pop_2021 <- respiratory_01_population(df = NULL,
                                                      esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                      esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                      evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                     evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
-)
+                                                     evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14
+                                                     )
 
 # population results 2021
 respiratory_01_pop_filter_process_2021 <- respiratory_01_pop_2021$filter_process |>
@@ -187,8 +187,8 @@ respiratory_01_pop_2022 <- respiratory_01_population(df = NULL,
                                                      esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                      esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                      evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                     evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
-)
+                                                     evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14
+                                                     )
 
 # population results 2022
 respiratory_01_pop_filter_process_2022 <- respiratory_01_pop_2022$filter_process |>
@@ -209,8 +209,8 @@ respiratory_01_pop_2023 <- respiratory_01_population(df = NULL,
                                                      esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                      esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                      evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                     evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
-)
+                                                     evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14
+                                                     )
 
 # population results 2023
 respiratory_01_pop_filter_process_2023 <- respiratory_01_pop_2023$filter_process |>
@@ -231,8 +231,8 @@ respiratory_01_pop_2024 <- respiratory_01_population(df = NULL,
                                                      esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                      esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                      evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                     evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
-)
+                                                     evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14
+                                                     )
 
 # population results 2024
 respiratory_01_pop_filter_process_2024 <- respiratory_01_pop_2024$filter_process |>
@@ -243,7 +243,7 @@ respiratory_01_pop_years <- dplyr::bind_rows(respiratory_01_pop_filter_process_2
                                              respiratory_01_pop_filter_process_2022,
                                              respiratory_01_pop_filter_process_2023,
                                              respiratory_01_pop_filter_process_2024
-)
+                                             )
 
 # plot population trends over time
 respiratory_01_pop_years |>
@@ -253,7 +253,7 @@ respiratory_01_pop_years |>
                    facets = TRUE,
                    vjust_title = 2,
                    vjust_subtitle = 1.5
-  )
+                   )
 
 ### respiratory-01 results #####################################################
 
@@ -272,13 +272,13 @@ respiratory_01_result_year <- nemsqar::respiratory_01(df = NULL,
                                                       esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                       esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                       evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                      evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                                      evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
                                                       .by = INCIDENT_YEAR
-)
+                                                      )
 
 # get confidence intervals
 respiratory_01_result_year <- respiratory_01_result_year |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 respiratory_01_result_regions_years <- nemsqar::respiratory_01(df = NULL,
@@ -295,19 +295,19 @@ respiratory_01_result_regions_years <- nemsqar::respiratory_01(df = NULL,
                                                                esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                                esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                                evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                               evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                                               evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
                                                                .by = c(INCIDENT_YEAR, `Region: Preparedness`)
-) |>
+                                                               ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # get confidence intervals
 respiratory_01_result_regions_years <- respiratory_01_result_regions_years |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions
 respiratory_01_result_regions <- nemsqar::respiratory_01(df = NULL,
-                                                         patient_scene_table = patient_scene_table,
+                                                         patient_scene_table = patient_table,
                                                          response_table = response_table,
                                                          situation_table = situation_table,
                                                          vitals_table = vitals_table,
@@ -318,21 +318,21 @@ respiratory_01_result_regions <- nemsqar::respiratory_01(df = NULL,
                                                          epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                          eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
                                                          esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                                         esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+                                                         esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_LIST_E_SITUATION_12,
                                                          evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                         evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                                         evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
                                                          .by = `Region: Preparedness`
-) |>
+                                                         ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # get confidence intervals
 respiratory_01_result_regions <- respiratory_01_result_regions |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # overall
 respiratory_01_result_overall <- nemsqar::respiratory_01(df = NULL,
-                                                         patient_scene_table = patient_scene_table,
+                                                         patient_scene_table = patient_table,
                                                          response_table = response_table,
                                                          situation_table = situation_table,
                                                          vitals_table = vitals_table,
@@ -343,12 +343,12 @@ respiratory_01_result_overall <- nemsqar::respiratory_01(df = NULL,
                                                          epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                          eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
                                                          esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
-                                                         esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+                                                         esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_LIST_E_SITUATION_12,
                                                          evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                         evitals_14_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
-)
+                                                         evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14
+                                                         )
 
 # get confidence intervals
 respiratory_01_result_overall <- respiratory_01_result_overall |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 

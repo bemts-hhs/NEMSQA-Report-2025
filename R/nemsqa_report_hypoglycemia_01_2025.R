@@ -188,7 +188,7 @@ hypoglycemia_01_pop <- hypoglycemia_01_population(df = NULL,
                                                   evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                   emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                   eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
-)
+                                                  )
 
 # population results for 2021-2024
 hypoglycemia_01_pop_filter_process <- hypoglycemia_01_pop$filter_process
@@ -214,7 +214,7 @@ hypoglycemia_01_pop_2021 <- hypoglycemia_01_population(df = NULL,
                                                        evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                        emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                        eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
-)
+                                                       )
 
 # population results 2021
 hypoglycemia_01_pop_filter_process_2021 <- hypoglycemia_01_pop_2021$filter_process |>
@@ -241,7 +241,7 @@ hypoglycemia_01_pop_2022 <- hypoglycemia_01_population(df = NULL,
                                                        evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                        emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                        eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
-)
+                                                       )
 
 # population results 2022
 hypoglycemia_01_pop_filter_process_2022 <- hypoglycemia_01_pop_2022$filter_process |>
@@ -268,7 +268,7 @@ hypoglycemia_01_pop_2023 <- hypoglycemia_01_population(df = NULL,
                                                        evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                        emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                        eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
-)
+                                                       )
 
 # population results 2023
 hypoglycemia_01_pop_filter_process_2023 <- hypoglycemia_01_pop_2023$filter_process |>
@@ -295,7 +295,7 @@ hypoglycemia_01_pop_2024 <- hypoglycemia_01_population(df = NULL,
                                                        evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                        emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                        eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
-)
+                                                       )
 
 # population results 2024
 hypoglycemia_01_pop_filter_process_2024 <- hypoglycemia_01_pop_2024$filter_process |>
@@ -306,7 +306,7 @@ hypoglycemia_01_pop_years <- dplyr::bind_rows(hypoglycemia_01_pop_filter_process
                                               hypoglycemia_01_pop_filter_process_2022,
                                               hypoglycemia_01_pop_filter_process_2023,
                                               hypoglycemia_01_pop_filter_process_2024
-)
+                                              )
 
 # plot population trends over time
 hypoglycemia_01_pop_years |>
@@ -316,7 +316,7 @@ hypoglycemia_01_pop_years |>
                    facets = TRUE,
                    vjust_title = 2,
                    vjust_subtitle = 1.5
-  )
+                   )
 
 ### hypoglycemia-01 results ####################################################
 
@@ -342,11 +342,11 @@ hypoglycemia_01_result_year <- nemsqar::hypoglycemia_01(df = NULL,
                                                         emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                         eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                         .by = INCIDENT_YEAR
-)
+                                                        )
 
 # get confidence intervals
 hypoglycemia_01_result_year <- hypoglycemia_01_result_year |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 hypoglycemia_01_result_regions_years <- nemsqar::hypoglycemia_01(df = NULL,
@@ -370,13 +370,13 @@ hypoglycemia_01_result_regions_years <- nemsqar::hypoglycemia_01(df = NULL,
                                                                  emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                                  eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                                  .by = c(INCIDENT_YEAR, `Region: Preparedness`)
-) |>
+                                                                 ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # get confidence intervals
 hypoglycemia_01_result_regions_years <- hypoglycemia_01_result_regions_years |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions
 hypoglycemia_01_result_regions <- nemsqar::hypoglycemia_01(df = NULL,
@@ -400,13 +400,13 @@ hypoglycemia_01_result_regions <- nemsqar::hypoglycemia_01(df = NULL,
                                                            emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                            eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                            .by = `Region: Preparedness`
-) |>
+                                                           ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
   tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
 
 # get confidence intervals
 hypoglycemia_01_result_regions <- hypoglycemia_01_result_regions |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # overall
 hypoglycemia_01_result_overall <- nemsqar::hypoglycemia_01(df = NULL,
@@ -429,9 +429,9 @@ hypoglycemia_01_result_overall <- nemsqar::hypoglycemia_01(df = NULL,
                                                            evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                            emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                            eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
-)
+                                                           )
 
 # get confidence intervals
 hypoglycemia_01_result_overall <- hypoglycemia_01_result_overall |>
-  nemsqa_binomial_confint(method = "wilson")
+  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 

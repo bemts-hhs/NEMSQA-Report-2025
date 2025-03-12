@@ -7,15 +7,19 @@ output: github_document
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.path = "man/figures/README/",
+  out.width = "100%"
 )
 ```
 
-# NEMSQA Report 2025
+# NEMSQA Report 2025 <img src="man/figures/HHS PFP 5.png" align="right" width="250" alt="" />
 
 The NEMSQA Report 2025 analyzes National EMS Quality Alliance (NEMSQA) measures from 2021-2024 for the state of Iowa, assessing EMS service quality. This project uses the {`nemsqar`} R package, developed to facilitate standardized EMS quality reporting.
 
 This report is completed by the Bureau of Emergency Medical and Trauma Services (BEMTS) epidemiologist to gauge Iowa EMS agencys' performance against the NEMSQA national benchmarks.  In this way, BEMTS can assess patient care quality using standardized measures. The {`nemsqar`} package facilitates easy measure calculation for continuous quality improvement.
+
+BEMTS exists within the Division of Public Health at Iowa Department of Health and Human Services (HHS).
 
 ## Installation
 To install the {`nemsqar`} package:

@@ -12,10 +12,14 @@ BEMTS exists within the Division of Public Health at Iowa Department of Health a
 To install the {`nemsqar`} package:
 
 ### Install from GitHub
+```r
 remotes::install_github("bemts-hhs/nemsqar")
+```
 
 ### Install from CRAN
+```r
 install.packages("nemsqar")
+```
 
 ## NEMSQA Measure Set
 

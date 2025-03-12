@@ -1,6 +1,6 @@
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# NEMSQA Report 2025 <img src="man/figures/README/HHS PFP 5.png" style="float: right; margin-left: 1px; margin-right: 0; width: 150px;" alt="HHS PFP Logo" />
+# NEMSQA Report 2025 <img src="man/figures/README/HHS PFP 5.png" align="right" style="margin-left: auto; margin-right: auto; width: 200px;" alt="HHS PFP Logo" />
 
 The NEMSQA Report 2025 analyzes National EMS Quality Alliance (NEMSQA) measures from 2021-2024 for the state of Iowa, assessing EMS service quality. This project uses the {`nemsqar`} R package, developed to facilitate standardized EMS quality reporting.
 

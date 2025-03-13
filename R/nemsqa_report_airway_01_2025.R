@@ -146,7 +146,7 @@ vitals_table <- vitals_rbind |>
 
 ### Airway-01 ==================================================================
 
-### airway-01 populations ########################################################
+### airway-01 populations ######################################################
 
 # over all years 2021-2024
 airway_01_pop <- nemsqar::airway_01_population(df = NULL,
@@ -304,7 +304,7 @@ airway_01_pop_years |>
                    facets = TRUE
                    )
 
-### airway-01 results ############################################################
+### airway-01 results ##########################################################
 
 # year
 airway_01_result_year <- nemsqar::airway_01(df = NULL,
@@ -328,12 +328,12 @@ airway_01_result_year <- nemsqar::airway_01(df = NULL,
                                             eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                             eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                                             eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
+                                            confidence_interval = TRUE,
+                                            method = "w",
+                                            conf.level = 0.95,
+                                            correct = TRUE,
                                             .by = INCIDENT_YEAR
                                             )
-
-# get confidence intervals
-airway_01_result_year <- airway_01_result_year |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 airway_01_result_regions_years <- nemsqar::airway_01(df = NULL,
@@ -357,14 +357,24 @@ airway_01_result_regions_years <- nemsqar::airway_01(df = NULL,
                                                      eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                      eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                                                      eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
+                                                     confidence_interval = TRUE,
+                                                     method = "w",
+                                                     conf.level = 0.95,
+                                                     correct = TRUE,
                                                      .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                      ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-airway_01_result_regions_years <- airway_01_result_regions_years |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(INCIDENT_YEAR,
+                  `Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # regions
 airway_01_result_regions <- nemsqar::airway_01(df = NULL,
@@ -388,10 +398,24 @@ airway_01_result_regions <- nemsqar::airway_01(df = NULL,
                                                eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
                                                eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE,
                                                .by = `Region: Preparedness`
                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_
+                              )
+                  )
 
 # overall
 airway_01_result_overall <- nemsqar::airway_01(df = NULL,
@@ -414,9 +438,19 @@ airway_01_result_overall <- nemsqar::airway_01(df = NULL,
                                                eprocedures_02_col = PROCEDURE_PERFORMED_PRIOR_TO_EMS_CARE_E_PROCEDURES_02,
                                                eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
                                                eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
-                                               eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06
+                                               eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE
                                                )
 
-# get confidence intervals
-airway_01_result_overall <- airway_01_result_overall |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+### EXPORT =====================================================================
+
+### population exports #########################################################
+
+export_nemsqa_data(pattern = "airway_01_pop", measure = "Airway-01", folder = "population")
+
+### results exports ############################################################
+
+export_nemsqa_data(pattern = "airway_01_result", measure = "Airway-01", folder = "result")

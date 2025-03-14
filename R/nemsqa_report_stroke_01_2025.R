@@ -132,7 +132,7 @@ vitals_table <- vitals_rbind |>
 
 # over all years 2021-2024
 stroke_01_pop <- stroke_01_population(df = NULL,
-                                      patient_scene_table = stroke_01_patient_table,
+                                      patient_scene_table = stroke_01_patient_scene_table,
                                       response_table = stroke_01_response_table,
                                       situation_table = stroke_01_situation_table,
                                       vitals_table = stroke_01_vitals_table,
@@ -151,7 +151,7 @@ stroke_01_pop_filter_process <- stroke_01_pop$filter_process
 
 # 2021
 stroke_01_pop_2021 <- stroke_01_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2021),
@@ -171,7 +171,7 @@ stroke_01_pop_filter_process_2021 <- stroke_01_pop_2021$filter_process |>
 
 # 2022
 stroke_01_pop_2022 <- stroke_01_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2022)
                                            situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2022),
@@ -191,7 +191,7 @@ stroke_01_pop_filter_process_2022 <- stroke_01_pop_2022$filter_process |>
 
 # 2023
 stroke_01_pop_2023 <- stroke_01_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2023),
@@ -211,7 +211,7 @@ stroke_01_pop_filter_process_2023 <- stroke_01_pop_2023$filter_process |>
 
 # 2024
 stroke_01_pop_2024 <- stroke_01_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2024),
@@ -250,7 +250,7 @@ stroke_01_pop_years |>
 
 # year
 stroke_01_result_year <- nemsqar::stroke_01(df = NULL,
-                                              patient_scene_table = patient_table,
+                                              patient_scene_table = patient_scene_table,
                                               response_table = response_table,
                                               situation_table = situation_table,
                                               vitals_table = vitals_table,
@@ -271,7 +271,7 @@ stroke_01_result_year <- stroke_01_result_year |>
 
 # regions and years
 stroke_01_result_regions_years <- nemsqar::stroke_01(df = NULL,
-                                                       patient_scene_table = patient_table,
+                                                       patient_scene_table = patient_scene_table,
                                                        response_table = response_table,
                                                        situation_table = situation_table,
                                                        vitals_table = vitals_table,
@@ -294,7 +294,7 @@ stroke_01_result_regions_years <- stroke_01_result_regions_years |>
 
 # regions
 stroke_01_result_regions <- nemsqar::stroke_01(df = NULL,
-                                                 patient_scene_table = patient_table,
+                                                 patient_scene_table = patient_scene_table,
                                                  response_table = response_table,
                                                  situation_table = situation_table,
                                                  vitals_table = vitals_table,
@@ -317,7 +317,7 @@ stroke_01_result_regions <- stroke_01_result_regions |>
 
 # overall
 stroke_01_result_overall <- nemsqar::stroke_01(df = NULL,
-                                                 patient_scene_table = patient_table,
+                                                 patient_scene_table = patient_scene_table,
                                                  response_table = response_table,
                                                  situation_table = situation_table,
                                                  vitals_table = vitals_table,

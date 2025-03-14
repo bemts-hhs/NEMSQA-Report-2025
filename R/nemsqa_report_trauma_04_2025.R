@@ -279,7 +279,7 @@ vitals_table <- vitals_rbind |>
 
 # over all years 2021-2024
 trauma_04_pop <- trauma_04_population(df = NULL,
-                                      patient_scene_table = patient_table,
+                                      patient_scene_table = patient_scene_table,
                                       response_table = response_table,
                                       situation_table = situation_table,
                                       vitals_table = vitals_table,
@@ -319,7 +319,7 @@ trauma_04_pop_filter_process <- trauma_04_pop$filter_process
 
 # 2021
 trauma_04_pop_2021 <- trauma_04_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2021),
@@ -360,7 +360,7 @@ trauma_04_pop_filter_process_2021 <- trauma_04_pop_2021$filter_process |>
 
 # 2022
 trauma_04_pop_2022 <- trauma_04_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2022),
@@ -401,7 +401,7 @@ trauma_04_pop_filter_process_2022 <- trauma_04_pop_2022$filter_process |>
 
 # 2023
 trauma_04_pop_2023 <- trauma_04_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2023),
@@ -442,7 +442,7 @@ trauma_04_pop_filter_process_2023 <- trauma_04_pop_2023$filter_process |>
 
 # 2024
 trauma_04_pop_2024 <- trauma_04_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2024),
@@ -502,7 +502,7 @@ trauma_04_pop_years |>
 
 # year
 trauma_04_result_year <- nemsqar::trauma_04(df = NULL,
-                                            patient_scene_table = patient_table,
+                                            patient_scene_table = patient_scene_table,
                                             response_table = response_table,
                                             situation_table = situation_table,
                                             vitals_table = vitals_table,
@@ -544,7 +544,7 @@ trauma_04_result_year <- trauma_04_result_year |>
 
 # regions and years
 trauma_04_result_regions_years <- nemsqar::trauma_04(df = NULL,
-                                                     patient_scene_table = patient_table,
+                                                     patient_scene_table = patient_scene_table,
                                                      response_table = response_table,
                                                      situation_table = situation_table,
                                                      vitals_table = vitals_table,
@@ -588,7 +588,7 @@ trauma_04_result_regions_years <- trauma_04_result_regions_years |>
 
 # regions
 trauma_04_result_regions <- nemsqar::trauma_04(df = NULL,
-                                               patient_scene_table = patient_table,
+                                               patient_scene_table = patient_scene_table,
                                                response_table = response_table,
                                                situation_table = situation_table,
                                                vitals_table = vitals_table,
@@ -632,7 +632,7 @@ trauma_04_result_regions <- trauma_04_result_regions |>
 
 # overall
 trauma_04_result_overall <- nemsqar::trauma_04(df = NULL,
-                                               patient_scene_table = patient_table,
+                                               patient_scene_table = patient_scene_table,
                                                response_table = response_table,
                                                situation_table = situation_table,
                                                vitals_table = vitals_table,

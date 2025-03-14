@@ -98,7 +98,7 @@ response_table <- response_rbind |>
 
 # over all years 2021-2024
 safety_01_pop <- safety_01_population(df = NULL,
-                                      patient_scene_table = patient_table,
+                                      patient_scene_table = patient_scene_table,
                                       response_table = response_table,
                                       erecord_01_col = FACT_INCIDENT_PK,
                                       incident_date_col = INCIDENT_DATE,
@@ -180,7 +180,7 @@ safety_01_pop_2024 <- safety_01_population(df = NULL,
 safety_01_pop_filter_process_2024 <- safety_01_pop_2024$filter_process |>
   dplyr::mutate(YEAR = 2024)
 
-# airway-18 populations over the years
+# safety-01 populations over the years
 safety_01_pop_years <- dplyr::bind_rows(safety_01_pop_filter_process_2021,
                                              safety_01_pop_filter_process_2022,
                                              safety_01_pop_filter_process_2023,
@@ -209,12 +209,12 @@ safety_01_result_year <- nemsqar::safety_01(df = NULL,
                                                       epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                       eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
                                                       eresponse_24_col = RESPONSE_ADDITIONAL_RESPONSE_MODE_DESCRIPTORS_E_RESPONSE_24,
-                                                      .by = INCIDENT_YEAR
-                                                      )
-
-# get confidence intervals
-safety_01_result_year <- safety_01_result_year |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+                                                      confidence_interval = TRUE,
+                                                      method = "w",
+                                                      conf.level = 0.95,
+                                                      correct = TRUE,
+                                            .by = INCIDENT_YEAR
+                                            )
 
 # regions and years
 safety_01_result_regions_years <- nemsqar::safety_01(df = NULL,
@@ -227,14 +227,24 @@ safety_01_result_regions_years <- nemsqar::safety_01(df = NULL,
                                                      epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                      eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
                                                      eresponse_24_col = RESPONSE_ADDITIONAL_RESPONSE_MODE_DESCRIPTORS_E_RESPONSE_24,
+                                                     confidence_interval = TRUE,
+                                                     method = "w",
+                                                     conf.level = 0.95,
+                                                     correct = TRUE,
                                                      .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                      ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-safety_01_result_regions_years <- safety_01_result_regions_years |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(INCIDENT_YEAR,
+                  `Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # regions
 safety_01_result_regions <- nemsqar::safety_01(df = NULL,
@@ -247,14 +257,23 @@ safety_01_result_regions <- nemsqar::safety_01(df = NULL,
                                                epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
                                                eresponse_24_col = RESPONSE_ADDITIONAL_RESPONSE_MODE_DESCRIPTORS_E_RESPONSE_24,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE,
                                                .by = `Region: Preparedness`
                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-safety_01_result_regions <- safety_01_result_regions |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # overall
 safety_01_result_overall <- nemsqar::safety_01(df = NULL,
@@ -266,9 +285,19 @@ safety_01_result_overall <- nemsqar::safety_01(df = NULL,
                                                epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
-                                               eresponse_24_col = RESPONSE_ADDITIONAL_RESPONSE_MODE_DESCRIPTORS_E_RESPONSE_24
+                                               eresponse_24_col = RESPONSE_ADDITIONAL_RESPONSE_MODE_DESCRIPTORS_E_RESPONSE_24,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE
                                                )
 
-# get confidence intervals
-safety_01_result_overall <- safety_01_result_overall |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+### EXPORT =====================================================================
+
+### population exports #########################################################
+
+export_nemsqa_data(pattern = "safety_01_pop", measure = "Safety-01", folder = "population")
+
+### results exports ############################################################
+
+export_nemsqa_data(pattern = "safety_01_result", measure = "Safety-01", folder = "result")

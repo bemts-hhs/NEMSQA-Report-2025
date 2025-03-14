@@ -236,7 +236,7 @@ asthma_01_pop_2024 <- asthma_01_population(df = NULL,
 asthma_01_pop_filter_process_2024 <- asthma_01_pop_2024$filter_process |>
   dplyr::mutate(YEAR = 2024)
 
-# airway-18 populations over the years
+# asthma-01 populations over the years
 asthma_01_pop_years <- dplyr::bind_rows(asthma_01_pop_filter_process_2021,
                                         asthma_01_pop_filter_process_2022,
                                         asthma_01_pop_filter_process_2023,
@@ -270,12 +270,12 @@ asthma_01_result_year <- nemsqar::asthma_01(df = NULL,
                                             esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                             esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                             emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                            confidence_interval = TRUE,
+                                            method = "w",
+                                            conf.level = 0.95,
+                                            correct = TRUE,
                                             .by = INCIDENT_YEAR
                                             )
-
-# get confidence intervals
-asthma_01_result_year <- asthma_01_result_year |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 asthma_01_result_regions_years <- nemsqar::asthma_01(df = NULL,
@@ -292,14 +292,24 @@ asthma_01_result_regions_years <- nemsqar::asthma_01(df = NULL,
                                                      esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                      esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                      emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                     confidence_interval = TRUE,
+                                                     method = "w",
+                                                     conf.level = 0.95,
+                                                     correct = TRUE,
                                                      .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                      ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-asthma_01_result_regions_years <- asthma_01_result_regions_years |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(INCIDENT_YEAR,
+                  `Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # regions
 asthma_01_result_regions <- nemsqar::asthma_01(df = NULL,
@@ -316,14 +326,23 @@ asthma_01_result_regions <- nemsqar::asthma_01(df = NULL,
                                                esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE,
                                                .by = `Region: Preparedness`
                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-asthma_01_result_regions <- asthma_01_result_regions |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # overall
 asthma_01_result_overall <- nemsqar::asthma_01(df = NULL,
@@ -339,10 +358,19 @@ asthma_01_result_overall <- nemsqar::asthma_01(df = NULL,
                                                eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
                                                esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
-                                               emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03
+                                               emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE
                                                )
 
-# get confidence intervals
-asthma_01_result_overall <- asthma_01_result_overall |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+### EXPORT =====================================================================
 
+### population exports #########################################################
+
+export_nemsqa_data(pattern = "asthma_01_pop", measure = "Asthma-01", folder = "population")
+
+### results exports ############################################################
+
+export_nemsqa_data(pattern = "asthma_01_result", measure = "Asthma-01", folder = "result")

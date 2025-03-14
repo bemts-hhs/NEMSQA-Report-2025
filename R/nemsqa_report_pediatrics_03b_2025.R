@@ -304,7 +304,7 @@ pediatrics_03b_pop_2024 <- pediatrics_03b_population(df = NULL,
 pediatrics_03b_pop_filter_process_2024 <- pediatrics_03b_pop_2024$filter_process |>
   dplyr::mutate(YEAR = 2024)
 
-# airway-18 populations over the years
+# pediatrics_03b populations over the years
 pediatrics_03b_pop_years <- dplyr::bind_rows(pediatrics_03b_pop_filter_process_2021,
                                              pediatrics_03b_pop_filter_process_2022,
                                              pediatrics_03b_pop_filter_process_2023,
@@ -339,12 +339,12 @@ pediatrics_03b_result_year <- nemsqar::pediatrics_03b(df = NULL,
                                                       eexam_02_col = PATIENT_LENGTH_BASED_COLOR_E_EXAM_02,
                                                       emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                       emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04,
+                                                      confidence_interval = TRUE,
+                                                      method = "w",
+                                                      conf.level = 0.95,
+                                                      correct = TRUE,
                                                       .by = INCIDENT_YEAR
                                                       )
-
-# get confidence intervals
-pediatrics_03b_result_year <- pediatrics_03b_result_year |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 pediatrics_03b_result_regions_years <- nemsqar::pediatrics_03b(df = NULL,
@@ -362,14 +362,24 @@ pediatrics_03b_result_regions_years <- nemsqar::pediatrics_03b(df = NULL,
                                                                eexam_02_col = PATIENT_LENGTH_BASED_COLOR_E_EXAM_02,
                                                                emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                                emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04,
+                                                               confidence_interval = TRUE,
+                                                               method = "w",
+                                                               conf.level = 0.95,
+                                                               correct = TRUE,
                                                                .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-pediatrics_03b_result_regions_years <- pediatrics_03b_result_regions_years |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(INCIDENT_YEAR,
+                  `Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # regions
 pediatrics_03b_result_regions <- nemsqar::pediatrics_03b(df = NULL,
@@ -387,14 +397,23 @@ pediatrics_03b_result_regions <- nemsqar::pediatrics_03b(df = NULL,
                                                          eexam_02_col = PATIENT_LENGTH_BASED_COLOR_E_EXAM_02,
                                                          emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                          emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04,
+                                                         confidence_interval = TRUE,
+                                                         method = "w",
+                                                         conf.level = 0.95,
+                                                         correct = TRUE,
                                                          .by = `Region: Preparedness`
                                                          ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-pediatrics_03b_result_regions <- pediatrics_03b_result_regions |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # overall
 pediatrics_03b_result_overall <- nemsqar::pediatrics_03b(df = NULL,
@@ -411,10 +430,19 @@ pediatrics_03b_result_overall <- nemsqar::pediatrics_03b(df = NULL,
                                                          eexam_01_col = PATIENT_WEIGHT_IN_KILOGRAMS_E_EXAM_01,
                                                          eexam_02_col = PATIENT_LENGTH_BASED_COLOR_E_EXAM_02,
                                                          emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
-                                                         emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04
+                                                         emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04,
+                                                         confidence_interval = TRUE,
+                                                         method = "w",
+                                                         conf.level = 0.95,
+                                                         correct = TRUE
                                                          )
+### EXPORT =====================================================================
 
-# get confidence intervals
-pediatrics_03b_result_overall <- pediatrics_03b_result_overall |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+### population exports #########################################################
+
+export_nemsqa_data(pattern = "pediatrics_03b_pop", measure = "Pediatrics-03b", folder = "population")
+
+### results exports ############################################################
+
+export_nemsqa_data(pattern = "pediatrics_03b_result", measure = "Pediatrics-03b", folder = "result")
 

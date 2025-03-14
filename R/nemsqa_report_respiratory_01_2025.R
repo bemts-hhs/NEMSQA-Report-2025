@@ -238,7 +238,7 @@ respiratory_01_pop_2024 <- respiratory_01_population(df = NULL,
 respiratory_01_pop_filter_process_2024 <- respiratory_01_pop_2024$filter_process |>
   dplyr::mutate(YEAR = 2024)
 
-# airway-18 populations over the years
+# respiratory-01 populations over the years
 respiratory_01_pop_years <- dplyr::bind_rows(respiratory_01_pop_filter_process_2021,
                                              respiratory_01_pop_filter_process_2022,
                                              respiratory_01_pop_filter_process_2023,
@@ -273,12 +273,12 @@ respiratory_01_result_year <- nemsqar::respiratory_01(df = NULL,
                                                       esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                       evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
                                                       evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+                                                      confidence_interval = TRUE,
+                                                      method = "w",
+                                                      conf.level = 0.95,
+                                                      correct = TRUE,
                                                       .by = INCIDENT_YEAR
                                                       )
-
-# get confidence intervals
-respiratory_01_result_year <- respiratory_01_result_year |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 respiratory_01_result_regions_years <- nemsqar::respiratory_01(df = NULL,
@@ -296,18 +296,28 @@ respiratory_01_result_regions_years <- nemsqar::respiratory_01(df = NULL,
                                                                esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
                                                                evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
                                                                evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+                                                               confidence_interval = TRUE,
+                                                               method = "w",
+                                                               conf.level = 0.95,
+                                                               correct = TRUE,
                                                                .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-respiratory_01_result_regions_years <- respiratory_01_result_regions_years |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(INCIDENT_YEAR,
+                  `Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # regions
 respiratory_01_result_regions <- nemsqar::respiratory_01(df = NULL,
-                                                         patient_scene_table = patient_table,
+                                                         patient_scene_table = patient_scene_table,
                                                          response_table = response_table,
                                                          situation_table = situation_table,
                                                          vitals_table = vitals_table,
@@ -321,18 +331,27 @@ respiratory_01_result_regions <- nemsqar::respiratory_01(df = NULL,
                                                          esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_LIST_E_SITUATION_12,
                                                          evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
                                                          evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+                                                         confidence_interval = TRUE,
+                                                         method = "w",
+                                                         conf.level = 0.95,
+                                                         correct = TRUE,
                                                          .by = `Region: Preparedness`
                                                          ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-respiratory_01_result_regions <- respiratory_01_result_regions |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # overall
 respiratory_01_result_overall <- nemsqar::respiratory_01(df = NULL,
-                                                         patient_scene_table = patient_table,
+                                                         patient_scene_table = patient_scene_table,
                                                          response_table = response_table,
                                                          situation_table = situation_table,
                                                          vitals_table = vitals_table,
@@ -345,10 +364,19 @@ respiratory_01_result_overall <- nemsqar::respiratory_01(df = NULL,
                                                          esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                          esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_LIST_E_SITUATION_12,
                                                          evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
-                                                         evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14
+                                                         evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+                                                         confidence_interval = TRUE,
+                                                         method = "w",
+                                                         conf.level = 0.95,
+                                                         correct = TRUE
                                                          )
 
-# get confidence intervals
-respiratory_01_result_overall <- respiratory_01_result_overall |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+### EXPORT =====================================================================
 
+### population exports #########################################################
+
+export_nemsqa_data(pattern = "respiratory_01_pop", measure = "Respiratory-01", folder = "population")
+
+### results exports ############################################################
+
+export_nemsqa_data(pattern = "respiratory_01_result", measure = "Respiratory-01", folder = "result")

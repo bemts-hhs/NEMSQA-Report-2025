@@ -133,7 +133,7 @@ situation_table <- situation_rbind |>
 
 # over all years 2021-2024
 seizure_02_pop <- seizure_02_population(df = NULL,
-                                        patient_scene_table = seizure_02_patient_table,
+                                        patient_scene_table = seizure_02_patient_scene_table,
                                         response_table = seizure_02_response_table,
                                         situation_table = seizure_02_situation_table,
                                         medications_table = seizure_02_medications_table,
@@ -153,7 +153,7 @@ seizure_02_pop_filter_process <- seizure_02_pop$filter_process
 
 # 2021
 seizure_02_pop_2021 <- seizure_02_population(df = NULL,
-                                             patient_scene_table = seizure_02_patient_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                             patient_scene_table = seizure_02_patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                              response_table = seizure_02_response_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                              situation_table = seizure_02_situation_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                              medications_table = seizure_02_medications_table |> dplyr::filter(INCIDENT_YEAR == 2021),
@@ -174,7 +174,7 @@ seizure_02_pop_filter_process_2021 <- seizure_02_pop_2021$filter_process |>
 
 # 2022
 seizure_02_pop_2022 <- seizure_02_population(df = NULL,
-                                             patient_scene_table = seizure_02_patient_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                             patient_scene_table = seizure_02_patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                              response_table = seizure_02_response_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                              situation_table = seizure_02_situation_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                              medications_table = seizure_02_medications_table |> dplyr::filter(INCIDENT_YEAR == 2022),
@@ -195,7 +195,7 @@ seizure_02_pop_filter_process_2022 <- seizure_02_pop_2022$filter_process |>
 
 # 2023
 seizure_02_pop_2023 <- seizure_02_population(df = NULL,
-                                             patient_scene_table = seizure_02_patient_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                             patient_scene_table = seizure_02_patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                              response_table = seizure_02_response_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                              situation_table = seizure_02_situation_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                              medications_table = seizure_02_medications_table |> dplyr::filter(INCIDENT_YEAR == 2023),
@@ -216,7 +216,7 @@ seizure_02_pop_filter_process_2023 <- seizure_02_pop_2023$filter_process |>
 
 # 2024
 seizure_02_pop_2024 <- seizure_02_population(df = NULL,
-                                             patient_scene_table = seizure_02_patient_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                             patient_scene_table = seizure_02_patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                              response_table = seizure_02_response_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                              situation_table = seizure_02_situation_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                              medications_table = seizure_02_medications_table |> dplyr::filter(INCIDENT_YEAR == 2024),
@@ -256,7 +256,7 @@ seizure_02_pop_years |>
 
 # year
 seizure_02_result_year <- nemsqar::seizure_02(df = NULL,
-                                              patient_scene_table = seizure_02_patient_table,
+                                              patient_scene_table = seizure_02_patient_scene_table,
                                               response_table = seizure_02_response_table,
                                               situation_table = seizure_02_situation_table,
                                               medications_table = seizure_02_medications_table,
@@ -278,7 +278,7 @@ seizure_02_result_year <- seizure_02_result_year |>
 
 # regions and years
 seizure_02_result_regions_years <- nemsqar::seizure_02(df = NULL,
-                                                       patient_scene_table = seizure_02_patient_table,
+                                                       patient_scene_table = seizure_02_patient_scene_table,
                                                        response_table = seizure_02_response_table,
                                                        situation_table = seizure_02_situation_table,
                                                        medications_table = seizure_02_medications_table,
@@ -302,7 +302,7 @@ seizure_02_result_regions_years <- seizure_02_result_regions_years |>
 
 # regions
 seizure_02_result_regions <- nemsqar::seizure_02(df = NULL,
-                                                 patient_scene_table = seizure_02_patient_table,
+                                                 patient_scene_table = seizure_02_patient_scene_table,
                                                  response_table = seizure_02_response_table,
                                                  situation_table = seizure_02_situation_table,
                                                  medications_table = seizure_02_medications_table,
@@ -326,7 +326,7 @@ seizure_02_result_regions <- seizure_02_result_regions |>
 
 # overall
 seizure_02_result_overall <- nemsqar::seizure_02(df = NULL,
-                                                 patient_scene_table = seizure_02_patient_table,
+                                                 patient_scene_table = seizure_02_patient_scene_table,
                                                  response_table = seizure_02_response_table,
                                                  situation_table = seizure_02_situation_table,
                                                  medications_table = seizure_02_medications_table,

@@ -117,7 +117,7 @@ response_table <- response_rbind |>
 
 # over all years 2021-2024
 safety_02_pop <- safety_02_population(df = NULL,
-                                      patient_scene_table = patient_table,
+                                      patient_scene_table = patient_scene_table,
                                       response_table = response_table,
                                       disposition_table = disposition_table,
                                       erecord_01_col = FACT_INCIDENT_PK,
@@ -138,7 +138,7 @@ safety_02_pop_filter_process <- safety_02_pop$filter_process
 
 # 2021
 safety_02_pop_2021 <- safety_02_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            erecord_01_col = FACT_INCIDENT_PK,
@@ -160,7 +160,7 @@ safety_02_pop_filter_process_2021 <- safety_02_pop_2021$filter_process |>
 
 # 2022
 safety_02_pop_2022 <- safety_02_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            erecord_01_col = FACT_INCIDENT_PK,
@@ -182,7 +182,7 @@ safety_02_pop_filter_process_2022 <- safety_02_pop_2022$filter_process |>
 
 # 2023
 safety_02_pop_2023 <- safety_02_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            erecord_01_col = FACT_INCIDENT_PK,
@@ -204,7 +204,7 @@ safety_02_pop_filter_process_2023 <- safety_02_pop_2023$filter_process |>
 
 # 2024
 safety_02_pop_2024 <- safety_02_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            erecord_01_col = FACT_INCIDENT_PK,
@@ -224,7 +224,7 @@ safety_02_pop_2024 <- safety_02_population(df = NULL,
 safety_02_pop_filter_process_2024 <- safety_02_pop_2024$filter_process |>
   dplyr::mutate(YEAR = 2024)
 
-# airway-18 populations over the years
+# safety-02 populations over the years
 safety_02_pop_years <- dplyr::bind_rows(safety_02_pop_filter_process_2021,
                                         safety_02_pop_filter_process_2022,
                                         safety_02_pop_filter_process_2023,
@@ -245,7 +245,7 @@ safety_02_pop_years |>
 
 # year
 safety_02_result_year <- nemsqar::safety_02(df = NULL,
-                                            patient_scene_table = patient_table,
+                                            patient_scene_table = patient_scene_table,
                                             response_table = response_table,
                                             disposition_table = disposition_table,
                                             erecord_01_col = FACT_INCIDENT_PK,
@@ -268,7 +268,7 @@ safety_02_result_year <- safety_02_result_year |>
 
 # regions and years
 safety_02_result_regions_years <- nemsqar::safety_02(df = NULL,
-                                                     patient_scene_table = patient_table,
+                                                     patient_scene_table = patient_scene_table,
                                                      response_table = response_table,
                                                      disposition_table = disposition_table,
                                                      erecord_01_col = FACT_INCIDENT_PK,
@@ -293,7 +293,7 @@ safety_02_result_regions_years <- safety_02_result_regions_years |>
 
 # regions
 safety_02_result_regions <- nemsqar::safety_02(df = NULL,
-                                               patient_scene_table = patient_table,
+                                               patient_scene_table = patient_scene_table,
                                                response_table = response_table,
                                                disposition_table = disposition_table,
                                                erecord_01_col = FACT_INCIDENT_PK,
@@ -318,7 +318,7 @@ safety_02_result_regions <- safety_02_result_regions |>
 
 # overall
 safety_02_result_overall <- nemsqar::safety_02(df = NULL,
-                                               patient_scene_table = patient_table,
+                                               patient_scene_table = patient_scene_table,
                                                response_table = response_table,
                                                disposition_table = disposition_table,
                                                erecord_01_col = FACT_INCIDENT_PK,

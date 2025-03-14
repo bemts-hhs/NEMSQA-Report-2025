@@ -150,7 +150,7 @@ vitals_table <- vitals_rbind |>
 
 # over all years 2021-2024
 tbi_01_pop <- tbi_01_population(df = NULL,
-                                patient_scene_table = patient_table,
+                                patient_scene_table = patient_scene_table,
                                 response_table = response_table,
                                 situation_table = situation_table,
                                 disposition_table = disposition_table,
@@ -178,7 +178,7 @@ tbi_01_pop_filter_process <- tbi_01_pop$filter_process
 
 # 2021
 tbi_01_pop_2021 <- tbi_01_population(df = NULL,
-                                     patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                     patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                      response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                      situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                      disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2021),
@@ -207,7 +207,7 @@ tbi_01_pop_filter_process_2021 <- tbi_01_pop_2021$filter_process |>
 
 # 2022
 tbi_01_pop_2022 <- tbi_01_population(df = NULL,
-                                patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                 response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                 situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                 disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2022),
@@ -236,7 +236,7 @@ tbi_01_pop_filter_process_2022 <- tbi_01_pop_2022$filter_process |>
 
 # 2023
 tbi_01_pop_2023 <- tbi_01_population(df = NULL,
-                                     patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                     patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                      response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                      situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                      disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2023),
@@ -265,7 +265,7 @@ tbi_01_pop_filter_process_2023 <- tbi_01_pop_2023$filter_process |>
 
 # 2024
 tbi_01_pop_2024 <- tbi_01_population(df = NULL,
-                                     patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                     patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                      response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                      situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                      disposition_table = disposition_table |> dplyr::filter(INCIDENT_YEAR == 2024),
@@ -313,7 +313,7 @@ tbi_01_pop_years |>
 
 # year
 tbi_01_result_year <- nemsqar::tbi_01(df = NULL,
-                                      patient_scene_table = patient_table,
+                                      patient_scene_table = patient_scene_table,
                                       response_table = response_table,
                                       situation_table = situation_table,
                                       disposition_table = disposition_table,
@@ -343,7 +343,7 @@ tbi_01_result_year <- tbi_01_result_year |>
 
 # regions and years
 tbi_01_result_regions_years <- nemsqar::tbi_01(df = NULL,
-                                               patient_scene_table = patient_table,
+                                               patient_scene_table = patient_scene_table,
                                                response_table = response_table,
                                                situation_table = situation_table,
                                                disposition_table = disposition_table,
@@ -375,7 +375,7 @@ tbi_01_result_regions_years <- tbi_01_result_regions_years |>
 
 # regions
 tbi_01_result_regions <- nemsqar::tbi_01(df = NULL,
-                                         patient_scene_table = patient_table,
+                                         patient_scene_table = patient_scene_table,
                                          response_table = response_table,
                                          situation_table = situation_table,
                                          disposition_table = disposition_table,
@@ -407,7 +407,7 @@ tbi_01_result_regions <- tbi_01_result_regions |>
 
 # overall
 tbi_01_result_overall <- nemsqar::tbi_01(df = NULL,
-                                         patient_scene_table = patient_table,
+                                         patient_scene_table = patient_scene_table,
                                          response_table = response_table,
                                          situation_table = situation_table,
                                          disposition_table = disposition_table,

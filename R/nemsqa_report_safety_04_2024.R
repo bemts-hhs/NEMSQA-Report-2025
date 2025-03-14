@@ -171,7 +171,7 @@ response_table <- response_rbind |>
 
 # over all years 2021-2024
 safety_04_pop <- safety_04_population(df = NULL,
-                                      patient_scene_table = patient_table,
+                                      patient_scene_table = patient_scene_table,
                                       response_table = response_table,
                                       arrest_table = arrest_table,
                                       injury_table = injury_table,
@@ -197,7 +197,7 @@ safety_04_pop_filter_process <- safety_04_pop$filter_process
 
 # 2021
 safety_04_pop_2021 <- safety_04_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2021),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            arrest_table = arrest_table |> dplyr::filter(INCIDENT_YEAR == 2021),
                                            injury_table = injury_table |> dplyr::filter(INCIDENT_YEAR == 2021),
@@ -223,7 +223,7 @@ safety_04_pop_filter_process_2021 <- safety_04_pop_2021$filter_process |>
 
 # 2022
 safety_04_pop_2022 <- safety_04_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2022),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            arrest_table = arrest_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            injury_table = injury_table |> dplyr::filter(INCIDENT_YEAR == 2022),
@@ -250,7 +250,7 @@ safety_04_pop_filter_process_2022 <- safety_04_pop_2022$filter_process |>
 
 # 2023
 safety_04_pop_2023 <- safety_04_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2023),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            arrest_table = arrest_table |> dplyr::filter(INCIDENT_YEAR == 2023),
                                            injury_table = injury_table |> dplyr::filter(INCIDENT_YEAR == 2023),
@@ -277,7 +277,7 @@ safety_04_pop_filter_process_2023 <- safety_04_pop_2023$filter_process |>
 
 # 2024
 safety_04_pop_2024 <- safety_04_population(df = NULL,
-                                           patient_scene_table = patient_table |> dplyr::filter(INCIDENT_YEAR == 2024),
+                                           patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            arrest_table = arrest_table |> dplyr::filter(INCIDENT_YEAR == 2024),
                                            injury_table = injury_table |> dplyr::filter(INCIDENT_YEAR == 2024),
@@ -323,7 +323,7 @@ safety_04_pop_years |>
 
 # year
 safety_04_result_year <- nemsqar::safety_04(df = NULL,
-                                            patient_scene_table = patient_table,
+                                            patient_scene_table = patient_scene_table,
                                             response_table = response_table,
                                             arrest_table = arrest_table,
                                             injury_table = injury_table,
@@ -351,7 +351,7 @@ safety_04_result_year <- safety_04_result_year |>
 
 # regions and years
 safety_04_result_regions_years <- nemsqar::safety_04(df = NULL,
-                                                     patient_scene_table = patient_table,
+                                                     patient_scene_table = patient_scene_table,
                                                      response_table = response_table,
                                                      arrest_table = arrest_table,
                                                      injury_table = injury_table,
@@ -381,7 +381,7 @@ safety_04_result_regions_years <- safety_04_result_regions_years |>
 
 # regions
 safety_04_result_regions <- nemsqar::safety_04(df = NULL,
-                                               patient_scene_table = patient_table,
+                                               patient_scene_table = patient_scene_table,
                                                response_table = response_table,
                                                arrest_table = arrest_table,
                                                injury_table = injury_table,
@@ -411,7 +411,7 @@ safety_04_result_regions <- safety_04_result_regions |>
 
 # overall
 safety_04_result_overall <- nemsqar::safety_04(df = NULL,
-                                               patient_scene_table = patient_table,
+                                               patient_scene_table = patient_scene_table,
                                                response_table = response_table,
                                                arrest_table = arrest_table,
                                                injury_table = injury_table,

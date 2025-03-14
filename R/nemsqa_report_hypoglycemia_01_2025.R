@@ -301,7 +301,7 @@ hypoglycemia_01_pop_2024 <- hypoglycemia_01_population(df = NULL,
 hypoglycemia_01_pop_filter_process_2024 <- hypoglycemia_01_pop_2024$filter_process |>
   dplyr::mutate(YEAR = 2024)
 
-# airway-18 populations over the years
+# hypoglycemia-01 populations over the years
 hypoglycemia_01_pop_years <- dplyr::bind_rows(hypoglycemia_01_pop_filter_process_2021,
                                               hypoglycemia_01_pop_filter_process_2022,
                                               hypoglycemia_01_pop_filter_process_2023,
@@ -341,12 +341,12 @@ hypoglycemia_01_result_year <- nemsqar::hypoglycemia_01(df = NULL,
                                                         evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                         emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                         eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
+                                                        confidence_interval = TRUE,
+                                                        method = "w",
+                                                        conf.level = 0.95,
+                                                        correct = TRUE,
                                                         .by = INCIDENT_YEAR
                                                         )
-
-# get confidence intervals
-hypoglycemia_01_result_year <- hypoglycemia_01_result_year |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 hypoglycemia_01_result_regions_years <- nemsqar::hypoglycemia_01(df = NULL,
@@ -369,14 +369,24 @@ hypoglycemia_01_result_regions_years <- nemsqar::hypoglycemia_01(df = NULL,
                                                                  evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                                  emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                                  eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
+                                                                 confidence_interval = TRUE,
+                                                                 method = "w",
+                                                                 conf.level = 0.95,
+                                                                 correct = TRUE,
                                                                  .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                                  ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-hypoglycemia_01_result_regions_years <- hypoglycemia_01_result_regions_years |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(INCIDENT_YEAR,
+                  `Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # regions
 hypoglycemia_01_result_regions <- nemsqar::hypoglycemia_01(df = NULL,
@@ -399,14 +409,23 @@ hypoglycemia_01_result_regions <- nemsqar::hypoglycemia_01(df = NULL,
                                                            evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                            emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
                                                            eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
+                                                           confidence_interval = TRUE,
+                                                           method = "w",
+                                                           conf.level = 0.95,
+                                                           correct = TRUE,
                                                            .by = `Region: Preparedness`
                                                            ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-hypoglycemia_01_result_regions <- hypoglycemia_01_result_regions |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # overall
 hypoglycemia_01_result_overall <- nemsqar::hypoglycemia_01(df = NULL,
@@ -428,10 +447,19 @@ hypoglycemia_01_result_overall <- nemsqar::hypoglycemia_01(df = NULL,
                                                            evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
                                                            evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                            emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
-                                                           eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03
+                                                           eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
+                                                           confidence_interval = TRUE,
+                                                           method = "w",
+                                                           conf.level = 0.95,
+                                                           correct = TRUE
                                                            )
 
-# get confidence intervals
-hypoglycemia_01_result_overall <- hypoglycemia_01_result_overall |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+### EXPORT =====================================================================
 
+### population exports #########################################################
+
+export_nemsqa_data(pattern = "hypoglycemia_01_pop", measure = "Hypoglycemia-01", folder = "population")
+
+### results exports ############################################################
+
+export_nemsqa_data(pattern = "hypoglycemia_01_result", measure = "Hypoglycemia-01", folder = "result")

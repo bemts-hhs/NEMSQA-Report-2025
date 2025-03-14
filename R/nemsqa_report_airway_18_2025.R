@@ -322,12 +322,12 @@ airway_18_result_year <- nemsqar::airway_18(df = NULL,
                                             eairway_04_col = PATIENT_AIRWAY_DEVICE_PLACEMENT_CONFIRMED_METHOD_LIST_E_AIRWAY_04,
                                             evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
                                             evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                            confidence_interval = TRUE,
+                                            method = "w",
+                                            conf.level = 0.95,
+                                            correct = TRUE,
                                             .by = INCIDENT_YEAR
                                             )
-
-# get confidence intervals
-airway_18_result_year <- airway_18_result_year |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 airway_18_result_regions_years <- nemsqar::airway_18(df = NULL,
@@ -350,10 +350,24 @@ airway_18_result_regions_years <- nemsqar::airway_18(df = NULL,
                                                      eairway_04_col = PATIENT_AIRWAY_DEVICE_PLACEMENT_CONFIRMED_METHOD_LIST_E_AIRWAY_04,
                                                      evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
                                                      evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                                     confidence_interval = TRUE,
+                                                     method = "w",
+                                                     conf.level = 0.95,
+                                                     correct = TRUE,
                                                      .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                      ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
+  tidyr::complete(INCIDENT_YEAR,
+                  `Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # get confidence intervals
 airway_18_result_regions_years <- airway_18_result_regions_years |>
@@ -380,14 +394,23 @@ airway_18_result_regions <- nemsqar::airway_18(df = NULL,
                                                eairway_04_col = PATIENT_AIRWAY_DEVICE_PLACEMENT_CONFIRMED_METHOD_LIST_E_AIRWAY_04,
                                                evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
                                                evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE,
                                                .by = `Region: Preparedness`
                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-airway_18_result_regions <- airway_18_result_regions |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # overall
 airway_18_result_overall <- nemsqar::airway_18(df = NULL,
@@ -409,10 +432,19 @@ airway_18_result_overall <- nemsqar::airway_18(df = NULL,
                                                eairway_02_col = AIRWAY_DEVICE_PLACEMENT_CONFIRMATION_DATE_TIME_E_AIRWAY_02,
                                                eairway_04_col = PATIENT_AIRWAY_DEVICE_PLACEMENT_CONFIRMED_METHOD_LIST_E_AIRWAY_04,
                                                evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
-                                               evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16
+                                               evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE
                                                )
 
-# get confidence intervals
-airway_18_result_overall <- airway_18_result_overall |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+### EXPORT =====================================================================
 
+### population exports #########################################################
+
+export_nemsqa_data(pattern = "airway_18_pop", measure = "Airway-18", folder = "population")
+
+### results exports ############################################################
+
+export_nemsqa_data(pattern = "airway_18_result", measure = "Airway-18", folder = "result")

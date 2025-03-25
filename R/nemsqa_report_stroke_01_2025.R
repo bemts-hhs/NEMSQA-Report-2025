@@ -101,7 +101,7 @@ situation_rbind <- dplyr::bind_rows(situation_2021,
                                     situation_2022,
                                     situation_2023,
                                     situation_2024
-)
+                                    )
 
 # set up situation table for manipulations
 situation_table <- situation_rbind |>
@@ -172,7 +172,7 @@ stroke_01_pop_filter_process_2021 <- stroke_01_pop_2021$filter_process |>
 # 2022
 stroke_01_pop_2022 <- stroke_01_population(df = NULL,
                                            patient_scene_table = patient_scene_table |> dplyr::filter(INCIDENT_YEAR == 2022),
-                                           response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2022)
+                                           response_table = response_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            situation_table = situation_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            vitals_table = vitals_table |> dplyr::filter(INCIDENT_YEAR == 2022),
                                            erecord_01_col = FACT_INCIDENT_PK,

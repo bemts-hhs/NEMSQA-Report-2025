@@ -4,13 +4,14 @@
 # this script will contain all reporting calculations for Trauma-03
 # use nemsqa_report_prep_2025.R to get critical functions into memory
 ###_____________________________________________________________________________
-# assume that nemsqa_report_prep_2025.R was already ran to
-# load needed packages in the project
+# assume that nemsqa_report_prep_2025.R was already ran to load needed packages
+# and project-specific custom functions in the project
 ###_____________________________________________________________________________
 
 ### DATA -----------------------------------------------------------------------
 
 # tables imported in alphabetical order
+# tables do not need to be loaded again if already in memory
 
 ### disposition tables ###########################################################
 disposition_2021 <- import_nemsqa_data(table = "disposition", year = 2021)
@@ -328,12 +329,12 @@ trauma_03_result_year <- nemsqar::trauma_03(df = NULL,
                                             evitals_27_last_col = NULL,
                                             evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
                                             evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27,
+                                            confidence_interval = TRUE,
+                                            method = "w",
+                                            conf.level = 0.95,
+                                            correct = TRUE,
                                             .by = INCIDENT_YEAR
                                             )
-
-# get confidence intervals
-trauma_03_result_year <- trauma_03_result_year |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 trauma_03_result_regions_years <- nemsqar::trauma_03(df = NULL,
@@ -356,14 +357,24 @@ trauma_03_result_regions_years <- nemsqar::trauma_03(df = NULL,
                                                      evitals_27_last_col = NULL,
                                                      evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
                                                      evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27,
+                                                     confidence_interval = TRUE,
+                                                     method = "w",
+                                                     conf.level = 0.95,
+                                                     correct = TRUE,
                                                      .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                      ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-trauma_03_result_regions_years <- trauma_03_result_regions_years |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(INCIDENT_YEAR,
+                  `Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # regions
 trauma_03_result_regions <- nemsqar::trauma_03(df = NULL,
@@ -378,22 +389,31 @@ trauma_03_result_regions <- nemsqar::trauma_03(df = NULL,
                                                epatient_15_col = PATIENT_AGE_E_PATIENT_15,
                                                epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
                                                esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
-                                               evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
-                                               evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
                                                edisposition_28_col = PATIENT_EVALUATION_CARE_3_4_IT_DISPOSITION_100_3_5_E_DISPOSITION_28,
                                                transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
-                                                                             DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
-                                                                             ),
+                                                                             DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112),
+                                               evitals_27_initial_col = NULL,
+                                               evitals_27_last_col = NULL,
+                                               evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
                                                evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE,
                                                .by = `Region: Preparedness`
                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-trauma_03_result_regions <- trauma_03_result_regions |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # overall
 trauma_03_result_overall <- nemsqar::trauma_03(df = NULL,
@@ -416,9 +436,19 @@ trauma_03_result_overall <- nemsqar::trauma_03(df = NULL,
                                                evitals_27_initial_col = NULL,
                                                evitals_27_last_col = NULL,
                                                evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
-                                               evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27
+                                               evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE
                                                )
 
-# get confidence intervals
-trauma_03_result_overall <- trauma_03_result_overall |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+### EXPORT =====================================================================
+
+### population exports #########################################################
+
+export_nemsqa_data(pattern = "trauma_03_pop", measure = "Trauma-03", folder = "population")
+
+### results exports ############################################################
+
+export_nemsqa_data(pattern = "trauma_03_result", measure = "Trauma-03", folder = "result")

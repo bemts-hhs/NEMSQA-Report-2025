@@ -4,13 +4,15 @@
 # this script will contain all reporting calculations for TTR-01
 # use nemsqa_report_prep_2025.R to get critical functions into memory
 ###_____________________________________________________________________________
-# assume that nemsqa_report_prep_2025.R was already ran to
-# load needed packages in the project
+# assume that nemsqa_report_prep_2025.R was already ran to load needed packages
+# and project-specific custom functions in the project
 ###_____________________________________________________________________________
 
 ### DATA -----------------------------------------------------------------------
 
 # tables imported in alphabetical order
+# tables do not need to be loaded again if already in memory
+
 ### arrest tables ################################################################
 arrest_2021 <- import_nemsqa_data(table = "arrest", year = 2021)
 arrest_2022 <- import_nemsqa_data(table = "arrest", year = 2022)
@@ -325,12 +327,12 @@ ttr_01_result_year <- nemsqar::ttr_01(df = NULL,
                                       evitals_14_col = PATIENT_HIGH_RESPIRATORY_RATE_E_VITALS_14,
                                       evitals_23_col = PATIENT_HIGH_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
                                       evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
+                                      confidence_interval = TRUE,
+                                      method = "w",
+                                      conf.level = 0.95,
+                                      correct = TRUE,
                                       .by = INCIDENT_YEAR
                                       )
-
-# get confidence intervals
-ttr_01_result_year <- ttr_01_result_year |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 ttr_01_result_regions_years <- nemsqar::ttr_01(df = NULL,
@@ -354,14 +356,24 @@ ttr_01_result_regions_years <- nemsqar::ttr_01(df = NULL,
                                                evitals_14_col = PATIENT_HIGH_RESPIRATORY_RATE_E_VITALS_14,
                                                evitals_23_col = PATIENT_HIGH_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
                                                evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE,
                                                .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-ttr_01_result_regions_years <- ttr_01_result_regions_years |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(INCIDENT_YEAR,
+                  `Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # regions
 ttr_01_result_regions <- nemsqar::ttr_01(df = NULL,
@@ -385,14 +397,23 @@ ttr_01_result_regions <- nemsqar::ttr_01(df = NULL,
                                          evitals_14_col = PATIENT_HIGH_RESPIRATORY_RATE_E_VITALS_14,
                                          evitals_23_col = PATIENT_HIGH_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
                                          evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
+                                         confidence_interval = TRUE,
+                                         method = "w",
+                                         conf.level = 0.95,
+                                         correct = TRUE,
                                          .by = `Region: Preparedness`
                                          ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-ttr_01_result_regions <- ttr_01_result_regions |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # overall
 ttr_01_result_overall <- nemsqar::ttr_01(df = NULL,
@@ -415,9 +436,19 @@ ttr_01_result_overall <- nemsqar::ttr_01(df = NULL,
                                          evitals_12_col = PATIENT_HIGH_PULSE_OXIMETRY_E_VITALS_12,
                                          evitals_14_col = PATIENT_HIGH_RESPIRATORY_RATE_E_VITALS_14,
                                          evitals_23_col = PATIENT_HIGH_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
-                                         evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26
+                                         evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
+                                         confidence_interval = TRUE,
+                                         method = "w",
+                                         conf.level = 0.95,
+                                         correct = TRUE
                                          )
 
-# get confidence intervals
-ttr_01_result_overall <- ttr_01_result_overall |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+### EXPORT =====================================================================
+
+### population exports #########################################################
+
+export_nemsqa_data(pattern = "ttr_01_pop", measure = "TTR-01", folder = "population")
+
+### results exports ############################################################
+
+export_nemsqa_data(pattern = "ttr_01_result", measure = "TTR-01", folder = "result")

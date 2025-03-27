@@ -4,13 +4,15 @@
 # this script will contain all reporting calculations for Trauma-08
 # use nemsqa_report_prep_2025.R to get critical functions into memory
 ###_____________________________________________________________________________
-# assume that nemsqa_report_prep_2025.R was already ran to
-# load needed packages in the project
+# assume that nemsqa_report_prep_2025.R was already ran to load needed packages
+# and project-specific custom functions in the project
 ###_____________________________________________________________________________
 
 ### DATA -----------------------------------------------------------------------
 
 # tables imported in alphabetical order
+# tables do not need to be loaded again if already in memory
+
 ### disposition tables ###########################################################
 disposition_2021 <- import_nemsqa_data(table = "disposition", year = 2021)
 disposition_2022 <- import_nemsqa_data(table = "disposition", year = 2022)
@@ -313,12 +315,12 @@ trauma_08_result_year <- nemsqar::trauma_08(df = NULL,
                                             evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
                                             evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
                                             evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
+                                            confidence_interval = TRUE,
+                                            method = "w",
+                                            conf.level = 0.95,
+                                            correct = TRUE,
                                             .by = INCIDENT_YEAR
                                             )
-
-# get confidence intervals
-trauma_08_result_year <- trauma_08_result_year |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 trauma_08_result_regions_years <- nemsqar::trauma_08(df = NULL,
@@ -340,14 +342,24 @@ trauma_08_result_regions_years <- nemsqar::trauma_08(df = NULL,
                                                      evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
                                                      evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
                                                      evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
+                                                     confidence_interval = TRUE,
+                                                     method = "w",
+                                                     conf.level = 0.95,
+                                                     correct = TRUE,
                                                      .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                      ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-trauma_08_result_regions_years <- trauma_08_result_regions_years |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(INCIDENT_YEAR,
+                  `Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # regions
 trauma_08_result_regions <- nemsqar::trauma_08(df = NULL,
@@ -369,14 +381,23 @@ trauma_08_result_regions <- nemsqar::trauma_08(df = NULL,
                                                evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
                                                evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
                                                evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE,
                                                .by = `Region: Preparedness`
                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-trauma_08_result_regions <- trauma_08_result_regions |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # overall
 trauma_08_result_overall <- nemsqar::trauma_08(df = NULL,
@@ -397,9 +418,19 @@ trauma_08_result_overall <- nemsqar::trauma_08(df = NULL,
                                                                              ),
                                                evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
                                                evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
-                                               evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23
+                                               evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE
                                                )
 
-# get confidence intervals
-trauma_08_result_overall <- trauma_08_result_overall |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+### EXPORT =====================================================================
+
+### population exports #########################################################
+
+export_nemsqa_data(pattern = "trauma_08_pop", measure = "Trauma-08", folder = "population")
+
+### results exports ############################################################
+
+export_nemsqa_data(pattern = "trauma_08_result", measure = "Trauma-08", folder = "result")

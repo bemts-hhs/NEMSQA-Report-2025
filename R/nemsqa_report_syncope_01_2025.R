@@ -4,13 +4,14 @@
 # this script will contain all reporting calculations for Syncope-01
 # use nemsqa_report_prep_2025.R to get critical functions into memory
 ###_____________________________________________________________________________
-# assume that nemsqa_report_prep_2025.R was already ran to
-# load needed packages in the project
+# assume that nemsqa_report_prep_2025.R was already ran to load needed packages
+# and project-specific custom functions in the project
 ###_____________________________________________________________________________
 
 ### DATA -----------------------------------------------------------------------
 
 # tables imported in alphabetical order
+# tables do not need to be loaded again if already in memory
 
 ### patient/scene tables #########################################################
 # given that patient and scene data are 1-1 relationship, join those tables
@@ -280,12 +281,12 @@ syncope_01_result_year <- nemsqar::syncope_01(df = NULL,
                                             esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                             esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_LIST_E_SITUATION_12,
                                             evitals_04_col = VITALS_ECG_TYPE_E_VITALS_04,
+                                            confidence_interval = TRUE,
+                                            method = "w",
+                                            conf.level = 0.95,
+                                            correct = TRUE,
                                             .by = INCIDENT_YEAR
                                             )
-
-# get confidence intervals
-syncope_01_result_year <- syncope_01_result_year |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 syncope_01_result_regions_years <- nemsqar::syncope_01(df = NULL,
@@ -304,14 +305,24 @@ syncope_01_result_regions_years <- nemsqar::syncope_01(df = NULL,
                                                      esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                      esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_LIST_E_SITUATION_12,
                                                      evitals_04_col = VITALS_ECG_TYPE_E_VITALS_04,
+                                                     confidence_interval = TRUE,
+                                                     method = "w",
+                                                     conf.level = 0.95,
+                                                     correct = TRUE,
                                                      .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                      ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-syncope_01_result_regions_years <- syncope_01_result_regions_years |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(INCIDENT_YEAR,
+                  `Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # regions
 syncope_01_result_regions <- nemsqar::syncope_01(df = NULL,
@@ -330,14 +341,23 @@ syncope_01_result_regions <- nemsqar::syncope_01(df = NULL,
                                                esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_LIST_E_SITUATION_12,
                                                evitals_04_col = VITALS_ECG_TYPE_E_VITALS_04,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE,
                                                .by = `Region: Preparedness`
                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-syncope_01_result_regions <- syncope_01_result_regions |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # overall
 syncope_01_result_overall <- nemsqar::syncope_01(df = NULL,
@@ -355,9 +375,19 @@ syncope_01_result_overall <- nemsqar::syncope_01(df = NULL,
                                                esituation_10_col = SITUATION_OTHER_ASSOCIATED_SYMPTOMS_LIST_E_SITUATION_10,
                                                esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
                                                esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_LIST_E_SITUATION_12,
-                                               evitals_04_col = VITALS_ECG_TYPE_E_VITALS_04
+                                               evitals_04_col = VITALS_ECG_TYPE_E_VITALS_04,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE
                                                )
 
-# get confidence intervals
-syncope_01_result_overall <- syncope_01_result_overall |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+### EXPORT =====================================================================
+
+### population exports #########################################################
+
+export_nemsqa_data(pattern = "syncope_01_pop", measure = "Syncope-01", folder = "population")
+
+### results exports ############################################################
+
+export_nemsqa_data(pattern = "syncope_01_result", measure = "Syncope-01", folder = "result")

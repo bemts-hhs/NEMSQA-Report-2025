@@ -4,13 +4,14 @@
 # this script will contain all reporting calculations for TBI-01
 # use nemsqa_report_prep_2025.R to get critical functions into memory
 ###_____________________________________________________________________________
-# assume that nemsqa_report_prep_2025.R was already ran to
-# load needed packages in the project
+# assume that nemsqa_report_prep_2025.R was already ran to load needed packages
+# and project-specific custom functions in the project
 ###_____________________________________________________________________________
 
 ### DATA -----------------------------------------------------------------------
 
 # tables imported in alphabetical order
+# tables do not need to be loaded again if already in memory
 
 ### disposition tables ###########################################################
 disposition_2021 <- import_nemsqa_data(table = "disposition", year = 2021)
@@ -334,12 +335,12 @@ tbi_01_result_year <- nemsqar::tbi_01(df = NULL,
                                       evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
                                       evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
                                       evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                      confidence_interval = TRUE,
+                                      method = "w",
+                                      conf.level = 0.95,
+                                      correct = TRUE,
                                       .by = INCIDENT_YEAR
                                       )
-
-# get confidence intervals
-tbi_01_result_year <- tbi_01_result_year |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 tbi_01_result_regions_years <- nemsqar::tbi_01(df = NULL,
@@ -364,14 +365,24 @@ tbi_01_result_regions_years <- nemsqar::tbi_01(df = NULL,
                                                evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
                                                evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
                                                evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE,
                                                .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-tbi_01_result_regions_years <- tbi_01_result_regions_years |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(INCIDENT_YEAR,
+                  `Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # regions
 tbi_01_result_regions <- nemsqar::tbi_01(df = NULL,
@@ -396,14 +407,23 @@ tbi_01_result_regions <- nemsqar::tbi_01(df = NULL,
                                          evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
                                          evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
                                          evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                         confidence_interval = TRUE,
+                                         method = "w",
+                                         conf.level = 0.95,
+                                         correct = TRUE,
                                          .by = `Region: Preparedness`
                                          ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-tbi_01_result_regions <- tbi_01_result_regions |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # overall
 tbi_01_result_overall <- nemsqar::tbi_01(df = NULL,
@@ -427,9 +447,19 @@ tbi_01_result_overall <- nemsqar::tbi_01(df = NULL,
                                                                        ),
                                          evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
                                          evitals_16_col = VITALS_CARBON_DIOXIDE_CO2_E_VITALS_16,
-                                         evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06
+                                         evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                         confidence_interval = TRUE,
+                                         method = "w",
+                                         conf.level = 0.95,
+                                         correct = TRUE
                                          )
 
-# get confidence intervals
-tbi_01_result_overall <- tbi_01_result_overall |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+### EXPORT =====================================================================
+
+### population exports #########################################################
+
+export_nemsqa_data(pattern = "tbi_01_pop", measure = "TBI-01", folder = "population")
+
+### results exports ############################################################
+
+export_nemsqa_data(pattern = "tbi_01_result", measure = "TBI-01", folder = "result")

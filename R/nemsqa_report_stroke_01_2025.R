@@ -4,13 +4,14 @@
 # this script will contain all reporting calculations for Stroke-01
 # use nemsqa_report_prep_2025.R to get critical functions into memory
 ###_____________________________________________________________________________
-# assume that nemsqa_report_prep_2025.R was already ran to
-# load needed packages in the project
+# assume that nemsqa_report_prep_2025.R was already ran to load needed packages
+# and project-specific custom functions in the project
 ###_____________________________________________________________________________
 
 ### DATA -----------------------------------------------------------------------
 
 # tables imported in alphabetical order
+# tables do not need to be loaded again if already in memory
 
 ### patient/scene tables #########################################################
 # given that patient and scene data are 1-1 relationship, join those tables
@@ -132,10 +133,10 @@ vitals_table <- vitals_rbind |>
 
 # over all years 2021-2024
 stroke_01_pop <- stroke_01_population(df = NULL,
-                                      patient_scene_table = stroke_01_patient_scene_table,
-                                      response_table = stroke_01_response_table,
-                                      situation_table = stroke_01_situation_table,
-                                      vitals_table = stroke_01_vitals_table,
+                                      patient_scene_table = patient_scene_table,
+                                      response_table = response_table,
+                                      situation_table = situation_table,
+                                      vitals_table = vitals_table,
                                       erecord_01_col = FACT_INCIDENT_PK,
                                       eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
                                       esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
@@ -262,12 +263,12 @@ stroke_01_result_year <- nemsqar::stroke_01(df = NULL,
                                               evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                               evitals_29_col = VITALS_STROKE_SCALE_SCORE_E_VITALS_29,
                                               evitals_30_col = VITALS_STROKE_SCALE_TYPE_E_VITALS_30,
+                                            confidence_interval = TRUE,
+                                            method = "w",
+                                            conf.level = 0.95,
+                                            correct = TRUE,
                                             .by = INCIDENT_YEAR
                                             )
-
-# get confidence intervals
-stroke_01_result_year <- stroke_01_result_year |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
 
 # regions and years
 stroke_01_result_regions_years <- nemsqar::stroke_01(df = NULL,
@@ -283,14 +284,24 @@ stroke_01_result_regions_years <- nemsqar::stroke_01(df = NULL,
                                                        evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                        evitals_29_col = VITALS_STROKE_SCALE_SCORE_E_VITALS_29,
                                                        evitals_30_col = VITALS_STROKE_SCALE_TYPE_E_VITALS_30,
+                                                     confidence_interval = TRUE,
+                                                     method = "w",
+                                                     conf.level = 0.95,
+                                                     correct = TRUE,
                                                      .by = c(INCIDENT_YEAR, `Region: Preparedness`)
                                                      ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(INCIDENT_YEAR, `Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-stroke_01_result_regions_years <- stroke_01_result_regions_years |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(INCIDENT_YEAR,
+                  `Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # regions
 stroke_01_result_regions <- nemsqar::stroke_01(df = NULL,
@@ -306,14 +317,23 @@ stroke_01_result_regions <- nemsqar::stroke_01(df = NULL,
                                                  evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                  evitals_29_col = VITALS_STROKE_SCALE_SCORE_E_VITALS_29,
                                                  evitals_30_col = VITALS_STROKE_SCALE_TYPE_E_VITALS_30,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE,
                                                .by = `Region: Preparedness`
                                                ) |>
   dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`, measure, pop, fill = list(numerator = 0, denominator = 0, prop = 0, prop_label = "0%"))
-
-# get confidence intervals
-stroke_01_result_regions <- stroke_01_result_regions |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_)
+                  )
 
 # overall
 stroke_01_result_overall <- nemsqar::stroke_01(df = NULL,
@@ -328,9 +348,19 @@ stroke_01_result_overall <- nemsqar::stroke_01(df = NULL,
                                                  evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
                                                  evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
                                                  evitals_29_col = VITALS_STROKE_SCALE_SCORE_E_VITALS_29,
-                                                 evitals_30_col = VITALS_STROKE_SCALE_TYPE_E_VITALS_30
+                                                 evitals_30_col = VITALS_STROKE_SCALE_TYPE_E_VITALS_30,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE
                                                )
 
-# get confidence intervals
-stroke_01_result_overall <- stroke_01_result_overall |>
-  nemsqa_binomial_confint(x = numerator, n = denominator, method = "wilson")
+### EXPORT =====================================================================
+
+### population exports #########################################################
+
+export_nemsqa_data(pattern = "stroke_01_pop", measure = "Stroke-01", folder = "population")
+
+### results exports ############################################################
+
+export_nemsqa_data(pattern = "stroke_01_result", measure = "Stroke-01", folder = "result")

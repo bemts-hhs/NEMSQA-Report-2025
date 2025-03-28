@@ -16,37 +16,30 @@
 # import statistical outputs for this measure
 import_nemsqa_statistical_files(measure = "Airway-01")
 
+# file path for exports
+population_viz_path <-
+
 ### TABLES ---------------------------------------------------------------------
 
 ### population data ############################################################
 
-airway_01_pop_years |>
-  tidyr::pivot_wider(id_cols = filter,
-                     names_from = YEAR,
-                     values_from = count
-                     ) |>
-  dplyr::mutate(filter = stringr::str_replace_all(string = filter,
-                                                  pattern = "(?:\\s)?call[s]?",
-                                                  replacement = " runs")
-                ) |>
-  dplyr::rowwise() |>
-  dplyr::mutate(`Population Trend` = list(c(`2021`, `2022`, `2023`, `2024`))) |>
-  dplyr::ungroup() |>
-  dplyr::mutate(dplyr::across(`2021`:`2024`, ~ traumar::small_count_label(., cutoff = 6, replacement = NA_integer_))) |>
-  dplyr::rename(Populations = filter) |>
-  gt::gt() |>
-  gt::fmt_integer(columns = -Populations) |>
-  gtExtras::gt_plt_sparkline(column = `Population Trend`,
-                             type = "ref_mean",
-                             palette = c("#70C8B8", "transparent", "#19405B", "#F27026", "#03617A"),
-                             same_limit = FALSE,
-                             label = TRUE
-                             ) |>
-  gt::sub_missing(columns = -Populations,
-                  missing_text = "*"
-                  ) |>
-  tab_style_hhs(table_title = "Iowa Airway-01",
-                table_subtitle = "For the years 2021:2024",
+# generate the population gt table
+airway_01_pop_gt <- airway_01_pop_years |>
+  prepare_population_statistical_file() |>
+  population_statistical_file_gt(fig_dim = c(8, 40)) |>
+  tab_style_hhs(table_title = "NEMSQA Airway-01 Populations: Iowa",
+                table_subtitle = "For the years 2021-2024",
                 message_text = "* Indicates masked data with n < 6. Population Trend horizontal lines indicate the arithmetic mean for that population group.",
-                border_cols = -1
+                border_cols = -1,
+                row_groups = 25,
+                column_labels = 25,
+                title = 35,
+                subtitle = 33,
+                spanners = 31,
+                body = 22,
+                source_note = 20,
+                footnote = 20
                 )
+
+# save the table
+export_nemsqa_gt(gt_object = airway_01_pop_gt, measure = "Airway-01", folder = "pop", extension = "png")

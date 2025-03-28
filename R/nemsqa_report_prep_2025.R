@@ -34,7 +34,77 @@ library(roxygen2md)
 library(extrafont)
 library(fontawesome)
 
-# Handy Functions ==============================================================
+
+# Handy Functions --------------------------------------------------------------
+
+### DATA CLEANING FACILITIES ===================================================
+# Clean Column Names and Standardize Date Fields in EMS Data
+# This function performs common data cleaning tasks, including renaming columns
+# to SCREAMING_SNAKE_CASE, standardizing date and datetime fields, generating
+# unique identifiers, and deriving additional time-related variables.
+clean_names_dates_data <- function(df) {
+
+  cleaned_df <- df |>
+
+    # Standardize column names to SCREAMING_SNAKE_CASE
+    janitor::clean_names(case = "screaming_snake", sep_out = "_") |>
+
+    # Convert date and datetime fields
+    dplyr::mutate(
+      # Convert date fields (excluding datetime fields)
+      dplyr::across(matches("date(?!.*time)", perl = TRUE),
+                    ~ lubridate::mdy(
+                      stringr::str_remove_all(., pattern = "\\s\\d+:\\d+(?::\\d+)?\\s[AP]M$")
+                    )
+      ),
+
+      # Convert datetime fields
+      dplyr::across(matches("date(?=.*time)", perl = TRUE),
+                    ~ lubridate::mdy_hms(
+                      stringr::str_remove_all(., pattern = "\\s[AP]M$")
+                    )
+      ),
+
+      # Create a unique ePCR number by concatenating PCR number with either datetime or date
+      UNIQUE_EPCR_NUMBER = dplyr::if_else(
+        !is.na(INCIDENT_DATE_TIME),
+        stringr::str_c(INCIDENT_PATIENT_CARE_REPORT_NUMBER_PCR_E_RECORD_01, INCIDENT_DATE_TIME),
+        stringr::str_c(INCIDENT_PATIENT_CARE_REPORT_NUMBER_PCR_E_RECORD_01, INCIDENT_DATE)
+      ),
+
+      # Create a unique run ID by concatenating agency number, PCR number, and either datetime or date
+      UNIQUE_RUN_ID = dplyr::if_else(
+        !is.na(INCIDENT_DATE_TIME),
+        stringr::str_c(AGENCY_NUMBER_D_AGENCY_02,
+                       INCIDENT_PATIENT_CARE_REPORT_NUMBER_PCR_E_RECORD_01,
+                       INCIDENT_DATE_TIME),
+        stringr::str_c(AGENCY_NUMBER_D_AGENCY_02,
+                       INCIDENT_PATIENT_CARE_REPORT_NUMBER_PCR_E_RECORD_01,
+                       INCIDENT_DATE)
+      )
+    ) |>
+
+    # Add derived time-related variables
+    dplyr::mutate(
+      INCIDENT_YEAR = lubridate::year(INCIDENT_DATE),
+      INCIDENT_CY_QUARTER = lubridate::quarter(INCIDENT_DATE),
+      INCIDENT_MONTH = lubridate::month(INCIDENT_DATE, label = FALSE),
+      INCIDENT_DAY = weekdays(INCIDENT_DATE, abbreviate = FALSE),
+      INCIDENT_WEEK_PART = traumar::weekend(INCIDENT_DATE),
+      INCIDENT_SEASON = traumar::season(INCIDENT_DATE),
+      .before = INCIDENT_DATE
+    ) |>
+
+    # Filter out demo services and ensure agency numbers meet format requirements
+    dplyr::filter(
+      AGENCY_IS_DEMO_SERVICE == FALSE, # Exclude demo services
+      stringr::str_sub(AGENCY_NUMBER_D_AGENCY_02, 1, 1) %in% c("2", "8", "9"), # Keep valid agency prefixes
+      nchar(AGENCY_NUMBER_D_AGENCY_02) == 7 # Ensure agency number is exactly 7 characters long
+    )
+
+  return(cleaned_df)
+
+}
 
 ###_____________________________________________________________________________
 # After observing the different problems with Iowa counties, we can
@@ -48,7 +118,7 @@ library(fontawesome)
 # - Removing unnecessary suffixes (e.g., "County", "Co").
 # - Correcting common misspellings using regex patterns.
 # - Inferring county names based on city names or ZIP codes when available.
-  function(df,
+clean_county_names_1 <- function(df,
            county_column,
            city_column,
            zip_column) {
@@ -530,6 +600,124 @@ zipcodes <- zipcodeR::zip_code_db |>
   dplyr::rename("new_county" = "county") |>
   dplyr::rename("new_zipcode" = "zipcode")
 
+### DATA MANIPULATION FACILITIES ===============================================
+
+#_____________________________________________________________________________
+# Function: Prepare Population Statistical File
+#_____________________________________________________________________________
+# This function processes population statistical data by reshaping, renaming,
+# and labeling small counts. It ensures consistency in formatting for analysis.
+#_____________________________________________________________________________
+prepare_population_statistical_file <- function(df) {
+
+  # Validate input: Ensure `df` is a data frame or tibble
+  if (!is.data.frame(df) && !tibble::is_tibble(df)) {
+    cli::cli_abort(
+      "The input `df` must be a {.cls data.frame} or {.cls tibble},
+      but received an object of class {.cls {class(df)}}."
+    )
+  }
+
+  # Validate required columns exist in `df`
+  required_columns <- c("filter", "YEAR", "count")
+  missing_columns <- setdiff(required_columns, colnames(df))
+
+  if (length(missing_columns) > 0) {
+    cli::cli_abort(
+      "The input data frame is missing required columns: {.var {missing_columns}}.
+      Ensure `df` contains {required_columns}."
+    )
+  }
+
+  # Transform the data: Pivot, modify labels, and apply small count suppression
+  prepared_df  <- df |>
+    # Reshape data from long to wide format
+    tidyr::pivot_wider(id_cols = filter,
+                       names_from = YEAR,
+                       values_from = count
+    ) |>
+
+    # Standardize terminology by replacing "call" or "calls" with "runs"
+    dplyr::mutate(filter = stringr::str_replace_all(string = filter,
+                                                    pattern = "call",
+                                                    replacement = "run")
+    ) |>
+
+    # Create a trend column with population counts over multiple years
+    dplyr::rowwise() |>
+    dplyr::mutate(`Population Trend` = list(c(`2021`, `2022`, `2023`, `2024`))) |>
+    dplyr::ungroup() |>
+
+    # Apply small count suppression for confidentiality
+    dplyr::mutate(dplyr::across(`2021`:`2024`,
+                                ~ traumar::small_count_label(.,
+                                                             cutoff = 6,
+                                                             replacement = NA_integer_))) |>
+
+    # Rename the primary identifier column for clarity
+    dplyr::rename(Populations = filter)
+
+  # Return the processed data frame
+  return(prepared_df)
+}
+
+#_____________________________________________________________________________
+# Function: Format Population Statistical File for GT Tables
+#_____________________________________________________________________________
+# This function takes a processed population statistical dataset and formats it
+# into a high-quality table using the {gt} package. It applies integer
+# formatting, generates a sparkline for population trends, and replaces missing
+# values with "*".
+#_____________________________________________________________________________
+population_statistical_file_gt <- function(df, fig_dim = c(5, 30)) {
+
+  # Validate input: Ensure `df` is a data frame or tibble
+  if (!is.data.frame(df) && !tibble::is_tibble(df)) {
+    cli::cli_abort(
+      "The input `df` must be a {.cls data.frame} or {.cls tibble},
+      but received an object of class {.cls {class(df)}}."
+    )
+  }
+
+  # Validate required columns exist in `df`
+  required_columns <- c("Populations", "Population Trend", "2021", "2022", "2023", "2024")
+  missing_columns <- setdiff(required_columns, colnames(df))
+
+  if (length(missing_columns) > 0) {
+    cli::cli_abort(
+      "The input data frame is missing required columns: {.var {missing_columns}}.
+      Ensure `df` contains {required_columns} before using this function."
+    )
+  }
+
+  # Construct the GT table with formatted elements
+  gt_df <- df |>
+    # Create a gt table
+    gt::gt() |>
+
+    # Format all numeric columns (except "Populations") as integers
+    gt::fmt_integer(columns = -Populations) |>
+
+    # Add a sparkline visualization for population trends
+    gtExtras::gt_plt_sparkline(
+      column = `Population Trend`,
+      type = "ref_mean",  # Use reference mean to standardize visualization
+      palette = c("#70C8B8", "transparent", "#19405B", "#F27026", "#03617A"),
+      same_limit = FALSE,  # Allow independent scaling of sparklines
+      label = FALSE,  # Display labels on sparklines for clarity
+      fig_dim = fig_dim # Dynamic sparkline dimensions
+    ) |>
+
+    # Replace missing values in all numeric columns (except "Populations") with "*"
+    gt::sub_missing(
+      columns = -Populations,
+      missing_text = "*"
+    )
+
+  # Return the formatted GT table
+  return(gt_df)
+}
+
 ### DATA IMPORT FACILITIES =====================================================
 
 # Import NEMSQA Data from a CSV File
@@ -602,75 +790,6 @@ import_nemsqa_statistical_files <- function(location = NULL, measure) {
     list2env(file_list, envir = .GlobalEnv)
 
   }) # End of with(temp_env)
-
-}
-
-### DATA CLEANING FACILITIES ===================================================
-# Clean Column Names and Standardize Date Fields in EMS Data
-# This function performs common data cleaning tasks, including renaming columns
-# to SCREAMING_SNAKE_CASE, standardizing date and datetime fields, generating
-# unique identifiers, and deriving additional time-related variables.
-clean_names_dates_data <- function(df) {
-
-  cleaned_df <- df |>
-
-    # Standardize column names to SCREAMING_SNAKE_CASE
-    janitor::clean_names(case = "screaming_snake", sep_out = "_") |>
-
-    # Convert date and datetime fields
-    dplyr::mutate(
-      # Convert date fields (excluding datetime fields)
-      dplyr::across(matches("date(?!.*time)", perl = TRUE),
-                    ~ lubridate::mdy(
-                      stringr::str_remove_all(., pattern = "\\s\\d+:\\d+(?::\\d+)?\\s[AP]M$")
-                    )
-      ),
-
-      # Convert datetime fields
-      dplyr::across(matches("date(?=.*time)", perl = TRUE),
-                    ~ lubridate::mdy_hms(
-                      stringr::str_remove_all(., pattern = "\\s[AP]M$")
-                    )
-      ),
-
-      # Create a unique ePCR number by concatenating PCR number with either datetime or date
-      UNIQUE_EPCR_NUMBER = dplyr::if_else(
-        !is.na(INCIDENT_DATE_TIME),
-        stringr::str_c(INCIDENT_PATIENT_CARE_REPORT_NUMBER_PCR_E_RECORD_01, INCIDENT_DATE_TIME),
-        stringr::str_c(INCIDENT_PATIENT_CARE_REPORT_NUMBER_PCR_E_RECORD_01, INCIDENT_DATE)
-      ),
-
-      # Create a unique run ID by concatenating agency number, PCR number, and either datetime or date
-      UNIQUE_RUN_ID = dplyr::if_else(
-        !is.na(INCIDENT_DATE_TIME),
-        stringr::str_c(AGENCY_NUMBER_D_AGENCY_02,
-                       INCIDENT_PATIENT_CARE_REPORT_NUMBER_PCR_E_RECORD_01,
-                       INCIDENT_DATE_TIME),
-        stringr::str_c(AGENCY_NUMBER_D_AGENCY_02,
-                       INCIDENT_PATIENT_CARE_REPORT_NUMBER_PCR_E_RECORD_01,
-                       INCIDENT_DATE)
-      )
-    ) |>
-
-    # Add derived time-related variables
-    dplyr::mutate(
-      INCIDENT_YEAR = lubridate::year(INCIDENT_DATE),
-      INCIDENT_CY_QUARTER = lubridate::quarter(INCIDENT_DATE),
-      INCIDENT_MONTH = lubridate::month(INCIDENT_DATE, label = FALSE),
-      INCIDENT_DAY = weekdays(INCIDENT_DATE, abbreviate = FALSE),
-      INCIDENT_WEEK_PART = traumar::weekend(INCIDENT_DATE),
-      INCIDENT_SEASON = traumar::season(INCIDENT_DATE),
-      .before = INCIDENT_DATE
-    ) |>
-
-    # Filter out demo services and ensure agency numbers meet format requirements
-    dplyr::filter(
-      AGENCY_IS_DEMO_SERVICE == FALSE, # Exclude demo services
-      stringr::str_sub(AGENCY_NUMBER_D_AGENCY_02, 1, 1) %in% c("2", "8", "9"), # Keep valid agency prefixes
-      nchar(AGENCY_NUMBER_D_AGENCY_02) == 7 # Ensure agency number is exactly 7 characters long
-    )
-
-  return(cleaned_df)
 
 }
 
@@ -1010,6 +1129,80 @@ export_nemsqa_data <- function(pattern, measure, folder = c("population", "resul
   cli::cli_text("\n")  # Add space before warnings
 
   return(invisible(NULL))
+}
+
+#_____________________________________________________________________________
+# Function: Export Formatted GT Table for NEMSQA Reports
+#_____________________________________________________________________________
+# This function saves a {gt} table object to a specified file format for reporting.
+# It integrates with the previously defined functions that process and format
+# population statistical data, ensuring seamless export of the final table.
+#
+# Arguments:
+#   - gt_object: A {gt} table object to be saved.
+#   - measure: The measure category (e.g., "asthma_01", "airway_18").
+#   - folder: A character string specifying whether the file belongs to the
+#             "population" or "result" folder (default: "population").
+#   - filename: Optional. The name of the output file. If not provided,
+#               the function generates one based on the object name.
+#   - path: Optional. The directory where the file should be saved. If not
+#           provided, it defaults to the standardized NEMSQA report path.
+#   - extension: Optional. The file extension/type. Defaults to ".docx".
+#_____________________________________________________________________________
+export_nemsqa_gt <- function(gt_object, measure, folder = c("population", "result"), filename = NULL, path = NULL, extension = NULL) {
+
+  # Validate folder selection
+  folder <- match.arg(folder, choices = c("population", "result"))
+
+  # Validate `gt_object` is a gt table
+  if (!inherits(gt_object, "gt_tbl")) {
+    cli::cli_abort(
+      "The input `gt_object` must be a {.cls gt_tbl}, but received an object of class {.cls {class(gt_object)}}.
+      Ensure that `gt_object` is created using the {gt} package before exporting."
+    )
+  }
+
+  # Validate `measure` is a non-empty string
+  if (!is.character(measure) || length(measure) != 1 || measure == "") {
+    cli::cli_abort("The argument `measure` must be a non-empty character string.")
+  }
+
+  # Set default output path if not provided
+  if (is.null(path)) {
+    path <- file.path(
+      "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Analytics/BEMTS/NEMSQA Report/2025/output",
+      measure,
+      folder
+    )
+  }
+
+  # Ensure the output directory exists
+  fs::dir_create(path)
+
+  # Set default file extension if not provided
+  if (is.null(extension)) {
+    extension <- ".docx"
+  }
+
+  # Ensure extension starts with a dot (.)
+  if (!grepl("^\\.", extension)) {
+    extension <- paste0(".", extension)
+  }
+
+  # Set default filename if not provided
+  if (is.null(filename)) {
+    filename <- paste0(deparse(substitute(gt_object)), extension)
+  }
+
+  # Construct full file path
+  full_path <- file.path(path, filename)
+
+  # Export the gt table
+  gt::gtsave(gt_object, filename = filename, path = path)
+
+  # Confirmation message
+  cli::cli_inform(c("✔" = "GT table successfully exported: {full_path}"))
+
 }
 
 ###_____________________________________________________________________________

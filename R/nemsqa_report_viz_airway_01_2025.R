@@ -16,9 +16,6 @@
 # import statistical outputs for this measure
 import_nemsqa_statistical_files(measure = "Airway-01")
 
-# file path for exports
-population_viz_path <-
-
 ### TABLES ---------------------------------------------------------------------
 
 ### population data ############################################################
@@ -43,3 +40,33 @@ airway_01_pop_gt <- airway_01_pop_years |>
 
 # save the table
 export_nemsqa_gt(gt_object = airway_01_pop_gt, measure = "Airway-01", folder = "pop", extension = "png")
+
+### results data ###############################################################
+
+# FIXME try a table for the results data using gtExtras::gt_plt_conf_int()
+airway_01_result_year |>
+  dplyr::select(-measure) |>
+  gt::gt(groupname_col = "INCIDENT_YEAR") |>
+  gt::cols_hide(columns = "prop_label") |>
+  gt::cols_label(pop = "") |>
+  gtExtras::gt_duplicate_column(prop, dupe_name = "Comparison") |>
+  gtExtras::gt_plt_conf_int(column = Comparison,
+                            ci_columns= c(lower_ci, upper_ci),
+                            text_size = 0
+                            ) |>
+  gt::fmt_number(columns = gt::matches("numer|denom"),
+                 drop_trailing_zeros = TRUE,
+                 drop_trailing_dec_mark = TRUE
+                 ) |>
+  gt::fmt_percent(columns = c(prop, matches("_ci"))) |>
+  gt::cols_merge(columns = c("prop", "lower_ci", "upper_ci"),
+                 pattern = "<<{1}>><< [{2},>><< {3}]>>"
+                 ) |>
+  gt::cols_label(numerator = "Numerator",
+                 denominator = "Denominator",
+                 prop = "Result [95% CI]") |>
+  tab_style_hhs(table_title = "test",
+                table_subtitle = "another test",
+                border_cols = -1,
+                message_text = "this be a test"
+                )

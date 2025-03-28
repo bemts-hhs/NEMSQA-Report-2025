@@ -11,7 +11,7 @@
 # install.packages(c("tidyverse", "traumar", "devtools", "remotes", "janitor",
 #                    "gt", "gtsummary", "gtExtras", "zipcodeR", "naniar",
 #                    "ggrepel", "devtools", "renv", "roxygen2",
-#                    "roxygen2md", "nemsqar", "extrafont"
+#                    "roxygen2md", "nemsqar", "extrafont", "patchwork"
 #                   ))
 
 # load packages ----
@@ -33,7 +33,7 @@ library(roxygen2)
 library(roxygen2md)
 library(extrafont)
 library(fontawesome)
-
+library(patchwork)
 
 # Handy Functions --------------------------------------------------------------
 
@@ -569,6 +569,8 @@ clean_county_names_2 <-
     return(clean_counties)
   }
 
+### HELPER FILES ===============================================================
+
 # get location data
 # Iowa county data
 county_data <- readxl::read_excel(path = "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Desktop/Analytics/Analytics Builds/GitHub/Reference-Files/IA Counties, Regions.xlsx")
@@ -661,6 +663,60 @@ prepare_population_statistical_file <- function(df) {
   return(prepared_df)
 }
 
+prepare_results_statistical_file <- function(df) {
+
+  # Validate input: Ensure `df` is a data frame or tibble
+  if (!is.data.frame(df) && !tibble::is_tibble(df)) {
+    cli::cli_abort(
+      "The input `df` must be a {.cls data.frame} or {.cls tibble},
+      but received an object of class {.cls {class(df)}}."
+    )
+  }
+
+  # Validate required columns exist in `df`
+  required_columns <- c("filter", "YEAR", "count")
+  missing_columns <- setdiff(required_columns, colnames(df))
+
+  if (length(missing_columns) > 0) {
+    cli::cli_abort(
+      "The input data frame is missing required columns: {.var {missing_columns}}.
+      Ensure `df` contains {required_columns}."
+    )
+  }
+
+  # Transform the data: Pivot, modify labels, and apply small count suppression
+  prepared_df  <- df |>
+    # Reshape data from long to wide format
+    tidyr::pivot_wider(id_cols = filter,
+                       names_from = YEAR,
+                       values_from = count
+    ) |>
+
+    # Standardize terminology by replacing "call" or "calls" with "runs"
+    dplyr::mutate(filter = stringr::str_replace_all(string = filter,
+                                                    pattern = "call",
+                                                    replacement = "run")
+    ) |>
+
+    # Create a trend column with population counts over multiple years
+    dplyr::rowwise() |>
+    dplyr::mutate(`Population Trend` = list(c(`2021`, `2022`, `2023`, `2024`))) |>
+    dplyr::ungroup() |>
+
+    # Apply small count suppression for confidentiality
+    dplyr::mutate(dplyr::across(`2021`:`2024`,
+                                ~ traumar::small_count_label(.,
+                                                             cutoff = 6,
+                                                             replacement = NA_integer_))) |>
+
+    # Rename the primary identifier column for clarity
+    dplyr::rename(Populations = filter)
+
+  # Return the processed data frame
+  return(prepared_df)
+
+}
+
 #_____________________________________________________________________________
 # Function: Format Population Statistical File for GT Tables
 #_____________________________________________________________________________
@@ -716,6 +772,56 @@ population_statistical_file_gt <- function(df, fig_dim = c(5, 30)) {
 
   # Return the formatted GT table
   return(gt_df)
+}
+
+results_statistical_file_gt <- function(df, pivoted = FALSE) {
+
+  # Validate input: Ensure `df` is a data frame or tibble
+  if (!is.data.frame(df) && !tibble::is_tibble(df)) {
+    cli::cli_abort(
+      "The input `df` must be a {.cls data.frame} or {.cls tibble},
+      but received an object of class {.cls {class(df)}}."
+    )
+  }
+
+  # Validate required columns exist in `df`
+  required_columns <- c("Populations", "Population Trend", "2021", "2022", "2023", "2024")
+  missing_columns <- setdiff(required_columns, colnames(df))
+
+  if (length(missing_columns) > 0) {
+    cli::cli_abort(
+      "The input data frame is missing required columns: {.var {missing_columns}}.
+      Ensure `df` contains {required_columns} before using this function."
+    )
+  }
+
+  # Construct the GT table with formatted elements
+  gt_df <- df |>
+    # Create a gt table
+    gt::gt() |>
+
+    # Format all numeric columns (except "Populations") as integers
+    gt::fmt_integer(columns = -Populations) |>
+
+    # Add a sparkline visualization for population trends
+    gtExtras::gt_plt_sparkline(
+      column = `Population Trend`,
+      type = "ref_mean",  # Use reference mean to standardize visualization
+      palette = c("#70C8B8", "transparent", "#19405B", "#F27026", "#03617A"),
+      same_limit = FALSE,  # Allow independent scaling of sparklines
+      label = FALSE,  # Display labels on sparklines for clarity
+      fig_dim = fig_dim # Dynamic sparkline dimensions
+    ) |>
+
+    # Replace missing values in all numeric columns (except "Populations") with "*"
+    gt::sub_missing(
+      columns = -Populations,
+      missing_text = "*"
+    )
+
+  # Return the formatted GT table
+  return(gt_df)
+
 }
 
 ### DATA IMPORT FACILITIES =====================================================
@@ -870,7 +976,7 @@ tab_style_hhs <- function(gt_object, table_title, table_subtitle, row_groups = 1
   out <- gt_object |>
 
     # Set the font for the table
-    opt_table_font(
+    gt::opt_table_font(
       font = "Work Sans",
       stack = NULL,
       weight = NULL,
@@ -879,7 +985,7 @@ tab_style_hhs <- function(gt_object, table_title, table_subtitle, row_groups = 1
     ) |>
 
     # Add title and subtitle
-    tab_header(title = gt::md(paste0(
+    gt::tab_header(title = gt::md(paste0(
       fontawesome::fa("truck-medical"),
       glue::glue(" **{table_title}**")
     )),
@@ -1149,7 +1255,12 @@ export_nemsqa_data <- function(pattern, measure, folder = c("population", "resul
 #           provided, it defaults to the standardized NEMSQA report path.
 #   - extension: Optional. The file extension/type. Defaults to ".docx".
 #_____________________________________________________________________________
-export_nemsqa_gt <- function(gt_object, measure, folder = c("population", "result"), filename = NULL, path = NULL, extension = NULL) {
+export_nemsqa_gt <- function(gt_object,
+                             measure,
+                             folder = c("population", "result"),
+                             filename = NULL,
+                             path = NULL,
+                             extension = NULL) {
 
   # Validate folder selection
   folder <- match.arg(folder, choices = c("population", "result"))

@@ -72,7 +72,12 @@ iowa_counties_sf <- tigris::counties(state = "Iowa")
 # summarize performance statewide over the timeframe of interest
 iowa_counties_sf |>
   dplyr::left_join(county_data, by = dplyr::join_by(NAME == County)) |>
-  dplyr::left_join(airway_01_result_regions, by = dplyr::join_by(`Region: Preparedness`)) |>
+  dplyr::left_join(airway_01_result_regions |>
+                     dplyr::summarize(numerator = sum(numerator, na.rm = TRUE),
+                                      denominator = sum(denominator, na.rm = TRUE),
+                                      prop = round(numerator / denominator, digits = 3),
+                                      .by = `Region: Preparedness`
+                     ), by = dplyr::join_by(`Region: Preparedness`)) |>
   ggplot2::ggplot(ggplot2::aes(fill = prop)) +
   ggplot2::geom_sf() +
   viridis::scale_fill_viridis(option = "magma", direction = -1) +

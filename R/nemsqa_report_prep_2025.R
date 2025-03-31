@@ -663,6 +663,22 @@ prepare_population_statistical_file <- function(df) {
   return(prepared_df)
 }
 
+#_____________________________________________________________________________
+# Function: Prepare Results Statistical File with Small Count Suppression
+#_____________________________________________________________________________
+# This function processes a statistical dataset by applying small count
+# suppression to the numerator and adjusting the denominator accordingly.
+# It ensures compliance with data privacy standards by replacing small values
+# with NA when they fall below a defined cutoff.
+#
+# Arguments:
+#   - df: A data frame containing statistical results, including at least
+#         `numerator` and `denominator` columns.
+#
+# Returns:
+#   - A modified data frame with suppressed small counts in the numerator
+#     and corresponding adjustments in the denominator.
+#_____________________________________________________________________________
 prepare_results_statistical_file <- function(df) {
 
   # Validate input: Ensure `df` is a data frame or tibble
@@ -673,154 +689,34 @@ prepare_results_statistical_file <- function(df) {
     )
   }
 
-  # Validate required columns exist in `df`
-  required_columns <- c("filter", "YEAR", "count")
-  missing_columns <- setdiff(required_columns, colnames(df))
+  # Validate required columns exist
+  required_cols <- c("numerator", "denominator")
+  missing_cols <- setdiff(required_cols, colnames(df)[colnames(df) %in% c("numerator", "denominator")])
 
-  if (length(missing_columns) > 0) {
+  if (length(missing_cols) > 0) {
     cli::cli_abort(
-      "The input data frame is missing required columns: {.var {missing_columns}}.
-      Ensure `df` contains {required_columns}."
+      "The input `df` is missing the following required columns: {.val {missing_cols}}.
+      Ensure the dataset contains all necessary fields before processing."
     )
   }
 
-  # Transform the data: Pivot, modify labels, and apply small count suppression
-  prepared_df  <- df |>
-    # Reshape data from long to wide format
-    tidyr::pivot_wider(id_cols = filter,
-                       names_from = YEAR,
-                       values_from = count
-    ) |>
+  # Apply small count suppression to the numerator and adjust the denominator
+  prepared_df <- df |>
+    dplyr::mutate(
+      numerator = traumar::small_count_label(
+        var = numerator,   # Apply small count suppression to numerator
+        cutoff = 6,        # Replace values below the threshold
+        replacement = NA_integer_  # Replace small values with NA
+      ),
+      denominator = dplyr::if_else(
+        is.na(numerator),  # If numerator is suppressed (NA),
+        NA_integer_,       # also suppress the denominator
+        denominator        # Otherwise, retain original value
+      )
+    )
 
-    # Standardize terminology by replacing "call" or "calls" with "runs"
-    dplyr::mutate(filter = stringr::str_replace_all(string = filter,
-                                                    pattern = "call",
-                                                    replacement = "run")
-    ) |>
-
-    # Create a trend column with population counts over multiple years
-    dplyr::rowwise() |>
-    dplyr::mutate(`Population Trend` = list(c(`2021`, `2022`, `2023`, `2024`))) |>
-    dplyr::ungroup() |>
-
-    # Apply small count suppression for confidentiality
-    dplyr::mutate(dplyr::across(`2021`:`2024`,
-                                ~ traumar::small_count_label(.,
-                                                             cutoff = 6,
-                                                             replacement = NA_integer_))) |>
-
-    # Rename the primary identifier column for clarity
-    dplyr::rename(Populations = filter)
-
-  # Return the processed data frame
+  # Return the modified data frame
   return(prepared_df)
-
-}
-
-#_____________________________________________________________________________
-# Function: Format Population Statistical File for GT Tables
-#_____________________________________________________________________________
-# This function takes a processed population statistical dataset and formats it
-# into a high-quality table using the {gt} package. It applies integer
-# formatting, generates a sparkline for population trends, and replaces missing
-# values with "*".
-#_____________________________________________________________________________
-population_statistical_file_gt <- function(df, fig_dim = c(5, 30)) {
-
-  # Validate input: Ensure `df` is a data frame or tibble
-  if (!is.data.frame(df) && !tibble::is_tibble(df)) {
-    cli::cli_abort(
-      "The input `df` must be a {.cls data.frame} or {.cls tibble},
-      but received an object of class {.cls {class(df)}}."
-    )
-  }
-
-  # Validate required columns exist in `df`
-  required_columns <- c("Populations", "Population Trend", "2021", "2022", "2023", "2024")
-  missing_columns <- setdiff(required_columns, colnames(df))
-
-  if (length(missing_columns) > 0) {
-    cli::cli_abort(
-      "The input data frame is missing required columns: {.var {missing_columns}}.
-      Ensure `df` contains {required_columns} before using this function."
-    )
-  }
-
-  # Construct the GT table with formatted elements
-  gt_df <- df |>
-    # Create a gt table
-    gt::gt() |>
-
-    # Format all numeric columns (except "Populations") as integers
-    gt::fmt_integer(columns = -Populations) |>
-
-    # Add a sparkline visualization for population trends
-    gtExtras::gt_plt_sparkline(
-      column = `Population Trend`,
-      type = "ref_mean",  # Use reference mean to standardize visualization
-      palette = c("#70C8B8", "transparent", "#19405B", "#F27026", "#03617A"),
-      same_limit = FALSE,  # Allow independent scaling of sparklines
-      label = FALSE,  # Display labels on sparklines for clarity
-      fig_dim = fig_dim # Dynamic sparkline dimensions
-    ) |>
-
-    # Replace missing values in all numeric columns (except "Populations") with "*"
-    gt::sub_missing(
-      columns = -Populations,
-      missing_text = "*"
-    )
-
-  # Return the formatted GT table
-  return(gt_df)
-}
-
-results_statistical_file_gt <- function(df, pivoted = FALSE) {
-
-  # Validate input: Ensure `df` is a data frame or tibble
-  if (!is.data.frame(df) && !tibble::is_tibble(df)) {
-    cli::cli_abort(
-      "The input `df` must be a {.cls data.frame} or {.cls tibble},
-      but received an object of class {.cls {class(df)}}."
-    )
-  }
-
-  # Validate required columns exist in `df`
-  required_columns <- c("Populations", "Population Trend", "2021", "2022", "2023", "2024")
-  missing_columns <- setdiff(required_columns, colnames(df))
-
-  if (length(missing_columns) > 0) {
-    cli::cli_abort(
-      "The input data frame is missing required columns: {.var {missing_columns}}.
-      Ensure `df` contains {required_columns} before using this function."
-    )
-  }
-
-  # Construct the GT table with formatted elements
-  gt_df <- df |>
-    # Create a gt table
-    gt::gt() |>
-
-    # Format all numeric columns (except "Populations") as integers
-    gt::fmt_integer(columns = -Populations) |>
-
-    # Add a sparkline visualization for population trends
-    gtExtras::gt_plt_sparkline(
-      column = `Population Trend`,
-      type = "ref_mean",  # Use reference mean to standardize visualization
-      palette = c("#70C8B8", "transparent", "#19405B", "#F27026", "#03617A"),
-      same_limit = FALSE,  # Allow independent scaling of sparklines
-      label = FALSE,  # Display labels on sparklines for clarity
-      fig_dim = fig_dim # Dynamic sparkline dimensions
-    ) |>
-
-    # Replace missing values in all numeric columns (except "Populations") with "*"
-    gt::sub_missing(
-      columns = -Populations,
-      missing_text = "*"
-    )
-
-  # Return the formatted GT table
-  return(gt_df)
 
 }
 
@@ -954,6 +850,192 @@ plot_nemsqa_pops <- function(df, wrap_width = 50, type = c("col", "line"),
 
 }
 
+#_____________________________________________________________________________
+# Function: Format Population Statistical File for GT Tables
+#_____________________________________________________________________________
+# This function takes a processed population statistical dataset and formats it
+# into a high-quality table using the {gt} package. It applies integer
+# formatting, generates a sparkline for population trends, and replaces missing
+# values with "*".
+#_____________________________________________________________________________
+population_statistical_file_gt <- function(df, measure, fig_dim = c(5, 30)) {
+
+  # Validate input: Ensure `df` is a data frame or tibble
+  if (!is.data.frame(df) && !tibble::is_tibble(df)) {
+    cli::cli_abort(
+      "The input `df` must be a {.cls data.frame} or {.cls tibble},
+      but received an object of class {.cls {class(df)}}."
+    )
+  }
+
+  # Validate `measure`
+  if (!is.character(measure)) {
+
+    cli::cli_abort(
+      c(
+        "{.var measure} must be a character vector of length 1 indicating which NEMSQA measure the data are in reference to.",
+
+        "i" = "{.var measure} had class {.cls {class(measure)}}."
+      )
+    )
+
+  }
+
+  # Validate required columns exist in `df`
+  required_columns <- c("Populations",
+                        "Population Trend",
+                        "2021",
+                        "2022",
+                        "2023",
+                        "2024")
+  missing_columns <- setdiff(required_columns, colnames(df))
+
+  if (length(missing_columns) > 0) {
+    cli::cli_abort(
+      "The input data frame is missing required columns: {.var {missing_columns}}.
+      Ensure `df` contains {required_columns} before using this function."
+    )
+  }
+
+  # Construct the GT table with formatted elements
+  gt_df <- suppressWarnings(
+    df |>
+      # Create a gt table
+      gt::gt() |>
+
+      # Add title and subtitle
+      gt::tab_header(
+        title = gt::md(paste0(
+          fontawesome::fa("truck-medical"),
+          glue::glue(" **Iowa NEMSQA {measure} Filter Process**")
+        )),
+        subtitle = gt::md(
+          glue::glue("Source: Iowa ImageTrend Elite Registry || Years: 2021-2024")
+        )
+      ) |>
+
+      # Format all numeric columns (except "Populations") as integers
+      gt::fmt_integer(columns = -Populations) |>
+
+      # Add a sparkline visualization for population trends
+      gtExtras::gt_plt_sparkline(
+        column = `Population Trend`,
+        # Use reference mean to standardize visualization
+        type = "ref_mean",
+        # Set sparkline colors
+        palette = c("#70C8B8", "transparent", "#19405B", "#F27026", "#03617A"),
+        same_limit = FALSE,
+        # Allow independent scaling of sparklines
+        label = FALSE,
+        # Display labels on sparklines for clarity
+        fig_dim = fig_dim # Dynamic sparkline dimensions
+      ) |>
+
+      # Replace missing values in all numeric columns (except "Populations") with "*"
+      gt::sub_missing(columns = -Populations, missing_text = "*")
+  )
+
+  # Return the formatted GT table
+  return(gt_df)
+}
+
+#_____________________________________________________________________________
+# Function: Format Results Statistical File for GT Table
+#_____________________________________________________________________________
+# This function formats and processes a results-based statistical dataset
+# into a {gt} table with enhanced formatting for reporting.
+# It integrates various {gt} and {gtExtras} functionalities, including:
+#   - Column transformations
+#   - Confidence interval visualization
+#   - Percentage formatting
+#   - Custom styling using `tab_style_hhs()`
+#
+# Arguments:
+#   - df: A data frame containing statistical results, including columns
+#         for numerator, denominator, proportion, confidence intervals, and
+#         the incident year for grouping.
+#
+# Returns:
+#   - A {gt} table object with formatted numerical and percentage values,
+#     confidence intervals, and appropriate styling.
+#_____________________________________________________________________________
+results_statistical_file_gt <- function(df, groups) {
+
+  # Validate input: Ensure `df` is a data frame or tibble
+  if (!is.data.frame(df) && !tibble::is_tibble(df)) {
+    cli::cli_abort(
+      "The input `df` must be a {.cls data.frame} or {.cls tibble},
+      but received an object of class {.cls {class(df)}}."
+    )
+  }
+
+  # Validate required columns exist
+  required_cols <- c(glue::glue("{groups}"), "measure", "prop", "lower_ci", "upper_ci", "numerator", "denominator")
+  missing_cols <- setdiff(required_cols, colnames(df))
+
+  if (length(missing_cols) > 0) {
+    cli::cli_abort(
+      "The input `df` is missing the following required columns: {.val {missing_cols}}.
+      Ensure the dataset contains all necessary fields before processing."
+    )
+  }
+
+  # Get the dynamic measure name
+  measure <- unique(df$measure)
+
+  # Transform the data: Pivot, modify labels, and apply small count suppression
+  prepared_df  <- suppressWarnings(
+    df |>
+      dplyr::select(-measure) |>  # Remove measure column if present
+      gt::gt(groupname_col = groups) |>  # Group table dynamically
+
+      # Add title and subtitle
+      gt::tab_header(
+        title = gt::md(paste0(
+          fontawesome::fa("truck-medical"),
+          glue::glue(" **NEMSQA {measure} Performance: Iowa**")
+        )),
+        subtitle = gt::md(
+          glue::glue("Source: Iowa ImageTrend Elite Registry || Years: 2021-2024")
+        )
+      ) |>
+
+      gt::cols_hide(columns = "prop_label") |>  # Hide proportion label column
+      gt::cols_label(pop = "") |>  # Rename `pop` column (if applicable)
+      gtExtras::gt_duplicate_column(prop, dupe_name = "Comparison") |>  # Duplicate `prop` for comparison
+      gtExtras::gt_plt_conf_int(
+        column = Comparison,
+        # Apply confidence interval plot to comparison column
+        ci_columns = c(lower_ci, upper_ci),
+        text_size = 0  # Hide text in plot for cleaner display
+      ) |>
+      gt::fmt_number(
+        columns = gt::matches("numer|denom"),
+        # Format numerator and denominator
+        drop_trailing_zeros = TRUE,
+        drop_trailing_dec_mark = TRUE
+      ) |>
+      gt::fmt_percent(columns = c(prop, matches("_ci")), decimals = 1) |>  # Format proportions and confidence intervals as percentages
+      gt::cols_merge(
+        columns = c("prop", "lower_ci", "upper_ci"),
+        # Merge confidence interval columns for readability
+        pattern = "<<{1}>><< [{2},>><< {3}]>>"
+      ) |>
+      gt::cols_label(
+        numerator = "Numerator",
+        denominator = "Denominator",
+        prop = "Result [95% CI]"
+      ) |>
+
+      # Replace missing values in all numeric columns (except "Populations") with "*"
+      gt::sub_missing(columns = numerator:upper_ci, missing_text = "*")
+  )
+
+  # Return the formatted {gt} table
+  return(prepared_df)
+
+}
+
 # Apply HHS Styling to a {gt} Table
 # This function applies a standardized Health & Human Services (HHS) style theme
 # to a `{gt}` table, enhancing readability and ensuring a professional,
@@ -966,7 +1048,7 @@ plot_nemsqa_pops <- function(df, wrap_width = 50, type = c("col", "line"),
 # - Borders: Adds top borders to row groups and left borders to selected
 #   columns.
 # - Source Notes: Includes `{fontawesome}` icons and relevant metadata.
-tab_style_hhs <- function(gt_object, table_title, table_subtitle, row_groups = 14, column_labels = 14,
+tab_style_hhs <- function(gt_object, row_groups = 14, column_labels = 14,
                           title = 20, subtitle = 18, spanners = 16, body = 14,
                           source_note = 12, footnote = 12, message_text,
                           row_group_fill = "#E0A624", row_group_fill_alpha = 0.5,
@@ -983,15 +1065,6 @@ tab_style_hhs <- function(gt_object, table_title, table_subtitle, row_groups = 1
       style = NULL,
       add = TRUE
     ) |>
-
-    # Add title and subtitle
-    gt::tab_header(title = gt::md(paste0(
-      fontawesome::fa("truck-medical"),
-      glue::glue(" **{table_title}**")
-    )),
-    subtitle = gt::md(
-      glue::glue("{table_subtitle}")
-    )) |>
 
     # Style the stub (row names) section
     gt::tab_style(

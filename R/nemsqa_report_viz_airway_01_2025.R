@@ -23,10 +23,8 @@ import_nemsqa_statistical_files(measure = "Airway-01")
 # generate the population gt table
 airway_01_pop_gt <- airway_01_pop_years |>
   prepare_population_statistical_file() |>
-  population_statistical_file_gt(fig_dim = c(8, 40)) |>
-  tab_style_hhs(table_title = "NEMSQA Airway-01 Populations: Iowa",
-                table_subtitle = "For the years 2021-2024",
-                message_text = "* Indicates masked data with n < 6. Population Trend horizontal lines indicate the arithmetic mean for that population group.",
+  population_statistical_file_gt(measure = "Airway-01", fig_dim = c(8, 40)) |>
+  tab_style_hhs(message_text = "* Indicates masked data with n < 6. Population Trend horizontal lines indicate the arithmetic mean for that population group.",
                 border_cols = -1,
                 row_groups = 25,
                 column_labels = 25,
@@ -43,30 +41,39 @@ export_nemsqa_gt(gt_object = airway_01_pop_gt, measure = "Airway-01", folder = "
 
 ### results data ###############################################################
 
-# FIXME try a table for the results data using gtExtras::gt_plt_conf_int()
-airway_01_result_year |>
-  dplyr::select(-measure) |>
-  gt::gt(groupname_col = "INCIDENT_YEAR") |>
-  gt::cols_hide(columns = "prop_label") |>
-  gt::cols_label(pop = "") |>
-  gtExtras::gt_duplicate_column(prop, dupe_name = "Comparison") |>
-  gtExtras::gt_plt_conf_int(column = Comparison,
-                            ci_columns= c(lower_ci, upper_ci),
-                            text_size = 0
-                            ) |>
-  gt::fmt_number(columns = gt::matches("numer|denom"),
-                 drop_trailing_zeros = TRUE,
-                 drop_trailing_dec_mark = TRUE
-                 ) |>
-  gt::fmt_percent(columns = c(prop, matches("_ci"))) |>
-  gt::cols_merge(columns = c("prop", "lower_ci", "upper_ci"),
-                 pattern = "<<{1}>><< [{2},>><< {3}]>>"
-                 ) |>
-  gt::cols_label(numerator = "Numerator",
-                 denominator = "Denominator",
-                 prop = "Result [95% CI]") |>
-  tab_style_hhs(table_title = "test",
-                table_subtitle = "another test",
-                border_cols = -1,
-                message_text = "this be a test"
+# generate the results gt table
+airway_01_results_gt <- airway_01_result_year |>
+  prepare_results_statistical_file() |>
+  results_statistical_file_gt(groups = c("INCIDENT_YEAR")) |>
+  # Add various source notes with icons from fontawesome
+  gt::tab_source_note(source_note = gt::md(paste0(
+    fontawesome::fa("note-sticky"),
+    " ",
+    "* Indicates masked data with n < 6."
+  ))) |>
+  tab_style_hhs(message_text = "`Comparison` indicates the result with 95% confidence intervals.",
+                border_cols = c(-1, -2),
+                row_groups = 25,
+                column_labels = 25,
+                title = 35,
+                subtitle = 28,
+                spanners = 31,
+                body = 22,
+                source_note = 20,
+                footnote = 20
                 )
+
+# save the table
+export_nemsqa_gt(gt_object = airway_01_results_gt, measure = "Airway-01", folder = "result", extension = "png")
+
+# FIXME try a tigris shapefile table
+iowa_counties_sf <- tigris::counties(state = "Iowa")
+
+# summarize performance statewide over the timeframe of interest
+iowa_counties_sf |>
+  dplyr::left_join(county_data, by = dplyr::join_by(NAME == County)) |>
+  dplyr::left_join(airway_01_result_regions, by = dplyr::join_by(`Region: Preparedness`)) |>
+  ggplot2::ggplot(ggplot2::aes(fill = prop)) +
+  ggplot2::geom_sf() +
+  viridis::scale_fill_viridis(option = "magma", direction = -1) +
+  ggplot2::theme_void()

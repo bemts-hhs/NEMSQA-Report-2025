@@ -42,7 +42,7 @@ patient_scene_rbind <- dplyr::bind_rows(patient_scene_2021,
                                         patient_scene_2022,
                                         patient_scene_2023,
                                         patient_scene_2024
-)
+                                        )
 
 # set up patient/scene table for manipulations
 patient_scene_clean <- patient_scene_rbind |>
@@ -379,6 +379,47 @@ airway_01_result_regions_years <- nemsqar::airway_01(df = NULL,
 
 # regions
 airway_01_result_regions <- nemsqar::airway_01(df = NULL,
+                                               patient_scene_table = patient_scene_table,
+                                               response_table = response_table,
+                                               arrest_table = arrest_table,
+                                               procedures_table = procedures_table,
+                                               vitals_table = vitals_table,
+                                               erecord_01_col = FACT_INCIDENT_PK,
+                                               incident_date_col = INCIDENT_DATE,
+                                               patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                               epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                               epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                               earrest_01_col = CARDIAC_ARREST_DURING_EMS_EVENT_WITH_CODE_E_ARREST_01,
+                                               eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                               evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
+                                               evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+                                               evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
+                                               eprocedures_01_col = PROCEDURE_PERFORMED_DATE_TIME_E_PROCEDURES_01,
+                                               eprocedures_02_col = PROCEDURE_PERFORMED_PRIOR_TO_EMS_CARE_E_PROCEDURES_02,
+                                               eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
+                                               eprocedures_05_col = PROCEDURE_NUMBER_OF_ATTEMPTS_E_PROCEDURES_05,
+                                               eprocedures_06_col = PROCEDURE_SUCCESSFUL_E_PROCEDURES_06,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE,
+                                               .by = `Region: Preparedness`
+                                               ) |>
+  dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
+  tidyr::complete(`Region: Preparedness`,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_
+                              )
+                  )
+
+# counties
+airway_01_result_counties <- nemsqar::airway_01(df = NULL,
                                                patient_scene_table = patient_scene_table,
                                                response_table = response_table,
                                                arrest_table = arrest_table,

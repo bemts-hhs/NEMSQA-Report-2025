@@ -766,20 +766,6 @@ geonames_admin2_iowa <- geonames_county |>
   dplyr::filter(country_code == "US", state_code == "IA")
 
 ###_____________________________________________________________________________
-# load in Iowa county FIPS codes from the Census Bureau
-# this gives the accurate name of all counties in the US state of Iowa
-# use for sanity check with the geonames database for reference
-###_____________________________________________________________________________
-
-iowa_county_FIPS <-
-  readr::read_delim(file = "https://www2.census.gov/geo/docs/reference/codes2020/cou/st19_ia_cou2020.txt") |>
-  dplyr::mutate(
-    COUNTYNAME = stringr::str_squish(COUNTYNAME),
-    COUNTYNAME = stringr::str_remove(COUNTYNAME, "\\sCounty")
-  ) |>
-  dplyr::select(COUNTYFP, COUNTYNAME)
-
-###_____________________________________________________________________________
 # join the county names / codes from geonames to the city data from geonames as their codes are unique
 # geonames does not use the same codes as Census Bureau
 ###_____________________________________________________________________________
@@ -887,6 +873,86 @@ missing_location_data <- tibble::tibble(
 Iowa_Data_Final <- dplyr::bind_rows(Iowa_Data_Final, missing_location_data)
 
 ### DATA MANIPULATION FACILITIES ===============================================
+
+#_____________________________________________________________________________
+# Function: fix_county_region()
+#_____________________________________________________________________________
+# This function standardizes city names, fills in missing county information
+# using an external reference, and assigns region values based on county data.
+# It ensures consistency in geographic data and handles out-of-state or
+# missing counties.
+#
+# Arguments:
+#   - df: A data frame containing city, county, and region columns.
+#   - city_col: Column in `df` containing city names.
+#   - county_col: Column in `df` containing county names.
+#   - region_col: Column in `df` containing region names.
+#   - external_city: External reference vector of city names.
+#   - external_county: External reference vector of county names.
+#   - external_region: External reference vector of region names.
+#
+# Returns:
+#   - A modified version of `df` with:
+#     * City names standardized (uppercase, unnecessary prefixes removed).
+#     * Missing county values filled in based on city-to-county mapping.
+#     * Counties labeled as "OOS or Missing" if they do not match `external_county`.
+#     * Missing region values assigned based on county-to-region mapping.
+#
+# Notes:
+#   - Uses `{dplyr}` for data transformation.
+#   - Ensures county and region assignments are accurate by cross-referencing
+#     external datasets.
+#   - Cities with prefixes like "NORTH OF", "SOUTH OF" are normalized.
+#_____________________________________________________________________________
+fix_county_region <- function(df, city_col, county_col, region_col, external_city, external_county, external_region) {
+
+  # Validate input: `df` must be a data frame or tibble
+  if (!is.data.frame(df) && !tibble::is_tibble(df)) {
+    cli::cli_abort("The argument {.var df} must be a data frame or tibble, but received {.cls {class(df)}}.")
+  }
+
+  # Validate input: `external_city`, `external_county`, `external_region` must be vectors
+  if (!is.vector(external_city) || !is.vector(external_county) || !is.vector(external_region)) {
+    cli::cli_abort("The arguments {.var external_city}, {.var external_county}, and {.var external_region} must be vectors.")
+  }
+
+  # Standardize city names: Convert to uppercase and remove directional prefixes
+  df <- df |>
+    dplyr::mutate(
+      {{ city_col }} := stringr::str_to_upper({{ city_col }}),
+      {{ city_col }} := stringr::str_remove_all({{ city_col }}, pattern = "\\w+\\sOF\\s")
+    )
+
+  # Fill in missing county names using external city-to-county mapping
+  df <- df |>
+    dplyr::mutate(
+      {{ county_col }} := dplyr::coalesce(
+        {{ county_col }},
+        Iowa_Data_Final$name_county[match({{ city_col }}, {{ external_city }})]
+      )
+    )
+
+  # Assign "OOS or Missing" if county is not found in the reference county list
+  df <- df |>
+    dplyr::mutate(
+      {{ county_col }} := dplyr::if_else(
+        !{{ county_col }} %in% unique({{ external_county }}),
+        "OOS or Missing",
+        {{ county_col }}
+      )
+    )
+
+  # Assign region values using external county-to-region mapping
+  df <- df |>
+    dplyr::mutate(
+      {{ region_col }} := dplyr::coalesce(
+        {{ region_col }},
+        {{ external_region }}[match({{ county_col }}, {{ external_county }})]
+      )
+    )
+
+  return(df)
+}
 
 #_____________________________________________________________________________
 # Function: Prepare Population Statistical File
@@ -1080,6 +1146,125 @@ import_nemsqa_statistical_files <- function(location = NULL, measure) {
 }
 
 ### DATA VISUALIZATION FACILITIES ==============================================
+
+#_____________________________________________________________________________
+# Function: results_to_county_map()
+#_____________________________________________________________________________
+# This function generates a choropleth map displaying county-level performance
+# metrics for a given measure using a shapefile of Iowa counties.
+#
+# Arguments:
+#   - df: A data frame containing measure results by county.
+#   - county_col: The column in `df` containing county names.
+#   - add_text: Logical, if TRUE, adds text labels to the map.
+#
+# Returns:
+#   - A ggplot object visualizing the performance data by county.
+#
+# Notes:
+#   - Requires {ggplot2}, {dplyr}, {tidyr}, {stringr}, {glue}, and {sf}.
+#   - Uses {traumar::pretty_percent()} to format proportions.
+#   - The `bins` variable categorizes proportions into 10% intervals.
+#   - The color scale is based on the `magma` palette from {viridis}.
+#_____________________________________________________________________________
+results_to_county_map <- function(df,
+                                  county_col = SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21,
+                                  add_text = FALSE
+                                  ) {
+
+  # Validate input: `df` must be a data frame or tibble
+  if (!is.data.frame(df) && !tibble::is_tibble(df)) {
+    cli::cli_abort("The argument {.var df} must be a data frame or tibble, but received {.cls {class(df)}}.")
+  }
+
+  # Validate input: `county_col` must exist in `df`
+  if (!rlang::as_string(rlang::ensym(county_col)) %in% names(df)) {
+    cli::cli_abort("The specified {.var county_col} column does not exist in {.var df}.")
+  }
+
+  # Extract the measure name for the plot title
+  measure <- unique(df$measure)
+
+  # Prepare county-level data: Aggregate numerators and denominators, calculate proportions
+  temp_obj <- iowa_counties_sf |>
+    dplyr::left_join(county_data, by = dplyr::join_by(NAME == County)) |>
+    dplyr::left_join(df |>
+                       dplyr::summarize(numerator = sum(numerator, na.rm = TRUE),
+                                        denominator = sum(denominator, na.rm = TRUE),
+                                        prop = round(numerator / denominator, digits = 3),
+                                        prop_label = dplyr::if_else(is.na(prop), "NA", traumar::pretty_percent(prop, n_decimal = 0)),
+                                        .by = {{ county_col }}
+                       ), by = dplyr::join_by(NAME == {{ county_col }})) |>
+    tidyr::replace_na(replace = list(prop = 0)) |>
+    dplyr::mutate(
+      bins = cut(prop, breaks = c(seq(from = 0, to = 1, by = 0.1)), include.lowest = TRUE),
+      bins = stringr::str_replace_all(string = bins, pattern = "\\[|\\]|\\(|\\)", replacement = ""),
+      bins = stringr::str_replace_all(string = bins, pattern = ",", replacement = "-")
+    )
+
+  # Define ggplot object with text in county borders
+  if (add_text) {
+
+    temp_plot <- temp_obj |>
+      dplyr::mutate(text_color = dplyr::if_else(prop < 0.3, "black", dplyr::if_else(is.na(prop), "black", "white")) # Define text color
+                    ) |>
+      ggplot2::ggplot(ggplot2::aes(fill = bins)) +
+      ggplot2::geom_sf() +
+      ggplot2::geom_sf_text(
+        ggplot2::aes(label = prop_label, color = text_color), # Ensure text_color is inside aes()
+        fontface = "bold",
+        family = "Work Sans"
+      ) +
+      ggplot2::scale_fill_viridis_d(direction = -1, option = "magma") +
+      ggplot2::scale_color_identity() +  # Use the colors as-is without mapping to a scale
+      ggplot2::labs(fill = "",
+                    title = glue::glue("NEMSQA {measure} Overall Performance: Iowa"),
+                    subtitle = "Source: Iowa ImageTrend Elite || Years: 2021-2024"
+      ) +
+      ggplot2::theme_void() +
+      ggplot2::theme(
+        plot.title = ggplot2::element_text(hjust = 0.5, size = 20, face = "bold", family = "Work Sans", color = "#19405B"),
+        plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 18, face = "bold", family = "Work Sans", color = "#70C8B8"),
+        legend.position = "bottom",
+        legend.direction = "horizontal",
+        legend.text = ggplot2::element_text(size = 14, family = "Work Sans", face = "bold"),  # Increase legend text size
+        legend.key.size = ggplot2::unit(1.5, "lines"),  # Increase fill box size
+        legend.margin = ggplot2::margin(t = -5, unit = "pt"),  # Move legend up
+        legend.box.margin = ggplot2::margin(t = -5, unit = "pt") # Reduce space
+      ) +
+      ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1))
+
+  # Define ggplot object without text in county borders
+  } else if (!add_text) {
+
+    temp_plot <- temp_obj |>
+    ggplot2::ggplot(ggplot2::aes(fill = bins)) +
+    ggplot2::geom_sf() +
+    ggplot2::scale_fill_viridis_d(direction = -1, option = "magma") +
+    ggplot2::scale_color_identity() +  # Use the colors as-is without mapping to a scale
+    ggplot2::labs(fill = "",
+                  title = glue::glue("NEMSQA {measure} Overall Performance: Iowa"),
+                  subtitle = "Source: Iowa ImageTrend Elite || Years: 2021-2024"
+    ) +
+    ggplot2::theme_void() +
+    ggplot2::theme(
+      plot.title = ggplot2::element_text(hjust = 0.5, size = 20, face = "bold", family = "Work Sans", color = "#19405B"),
+      plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 18, face = "bold", family = "Work Sans", color = "#70C8B8"),
+      legend.position = "bottom",
+      legend.direction = "horizontal",
+      legend.text = ggplot2::element_text(size = 14, family = "Work Sans", face = "bold"),  # Increase legend text size
+      legend.key.size = ggplot2::unit(1.5, "lines"),  # Increase fill box size
+      legend.margin = ggplot2::margin(t = -5, unit = "pt"),  # Move legend up
+      legend.box.margin = ggplot2::margin(t = -5, unit = "pt") # Reduce space
+    ) +
+    ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1))
+
+  }
+
+  return(temp_plot)
+
+  }
+
 # Plot Population Trends from NEMSQA Population Data
 # This function creates a column or line chart visualizing population trends
 # across multiple years from the outputs of `*_population` functions in the
@@ -1280,7 +1465,7 @@ results_statistical_file_gt <- function(df, groups) {
           glue::glue(" **NEMSQA {measure} Performance: Iowa**")
         )),
         subtitle = gt::md(
-          glue::glue("Source: Iowa ImageTrend Elite Registry || Years: 2021-2024")
+          glue::glue("Reporting Years: 2021-2024")
         )
       ) |>
 
@@ -1353,10 +1538,12 @@ tab_style_hhs <- function(gt_object, row_groups = 14, column_labels = 14,
     # Style the stub (row names) section
     gt::tab_style(
       locations = gt::cells_stub(),
-      style = gt::cell_text(size = gt::px(body),
-                            font = "Work Sans SemiBold",
-                            color = "black",
-                            align = "left")
+      style = gt::cell_text(
+        size = gt::px(body),
+        font = "Work Sans SemiBold",
+        color = "black",
+        align = "left"
+      )
     ) |>
 
     # Style the row groups
@@ -1496,40 +1683,16 @@ tab_style_hhs <- function(gt_object, row_groups = 14, column_labels = 14,
 
     # Add various source notes with icons from fontawesome
     gt::tab_source_note(source_note = gt::md(paste0(
-      fontawesome::fa("note-sticky"),
-      " ",
-      message_text
+      fontawesome::fa("note-sticky"), " ", message_text
     ))) |>
-
-    gt::tab_source_note(source_note = gt::md(
-      paste0(
-        fontawesome::fa("database"),
-        " Iowa ImageTrend Elite EMS Registry"
-      )
-    )) |>
-
-    gt::tab_source_note(source_note = gt::md(
-      paste0(
-        fontawesome::fa("house-medical"),
-        " Bureau of Emergency Medical and Trauma Services"
-      )
-    )) |>
 
     gt::tab_source_note(source_note = gt::md(paste0(
-      fontawesome::fa("building-shield"),
-      " Division of Public Health"
+      fontawesome::fa("database"),
+      " Iowa ImageTrend Elite EMS Registry"
     ))) |>
 
-    gt::tab_source_note(source_note = gt::md(
-      paste0(
-        fontawesome::fa("code"),
-        " Dr. Nicolas Foss, MS || Epidemiologist"
-      )
-    )) |>
-
     # Align all columns except the first one to the center
-    gt::cols_align(align = "center",
-                   columns = 2)
+    gt::cols_align(align = "center", columns = 2)
 
   return(out)
 }

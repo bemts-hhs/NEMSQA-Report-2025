@@ -42,7 +42,7 @@ patient_scene_rbind <- dplyr::bind_rows(patient_scene_2021,
                                         patient_scene_2022,
                                         patient_scene_2023,
                                         patient_scene_2024
-                                        )
+)
 
 # set up patient/scene table for manipulations
 patient_scene_clean <- patient_scene_rbind |>
@@ -88,7 +88,14 @@ patient_scene_table <- patient_scene_clean |>
   ) |>
   clean_county_names_2(county_column = PATIENT_HOME_COUNTY_NAME_E_PATIENT_07,
                        zip_column = PATIENT_HOME_POSTAL_CODE_E_PATIENT_09
-  )
+  ) |>
+  fix_county_region(city_col = SCENE_INCIDENT_CITY_NAME_E_SCENE_17,
+                    county_col = SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21,
+                    region_col = `Region: Preparedness`,
+                    external_city = Iowa_Data_Final$name_city,
+                    external_county = county_data$County,
+                    external_region = county_data$`Region: Preparedness`
+                    )
 
 
 
@@ -420,7 +427,7 @@ airway_01_result_regions <- nemsqar::airway_01(df = NULL,
 
 # counties
 airway_01_result_counties <- nemsqar::airway_01(df = NULL,
-                                               patient_scene_table = patient_scene_table,
+                                               patient_scene_table = patient_scene_table |> dplyr::mutate(SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21 = factor(SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21)),
                                                response_table = response_table,
                                                arrest_table = arrest_table,
                                                procedures_table = procedures_table,
@@ -444,10 +451,9 @@ airway_01_result_counties <- nemsqar::airway_01(df = NULL,
                                                method = "w",
                                                conf.level = 0.95,
                                                correct = TRUE,
-                                               .by = `Region: Preparedness`
+                                               .by = SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21
                                                ) |>
-  dplyr::mutate(`Region: Preparedness` = dplyr::if_else(is.na(`Region: Preparedness`), "Missing", `Region: Preparedness`)) |>
-  tidyr::complete(`Region: Preparedness`,
+  tidyr::complete(SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21,
                   measure,
                   pop,
                   fill = list(numerator = 0,

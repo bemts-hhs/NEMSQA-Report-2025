@@ -88,7 +88,14 @@ patient_scene_table <- patient_scene_clean |>
   ) |>
   clean_county_names_2(county_column = PATIENT_HOME_COUNTY_NAME_E_PATIENT_07,
                        zip_column = PATIENT_HOME_POSTAL_CODE_E_PATIENT_09
-  )
+  ) |>
+  fix_county_region(city_col = SCENE_INCIDENT_CITY_NAME_E_SCENE_17,
+                    county_col = SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21,
+                    region_col = `Region: Preparedness`,
+                    external_city = Iowa_Data_Final$name_city,
+                    external_county = county_data$County,
+                    external_region = county_data$`Region: Preparedness`
+                    )
 
 
 
@@ -391,6 +398,43 @@ airway_05_result_regions <- nemsqar::airway_05(df = NULL,
                               prop_label = NA_character_,
                               lower_ci = NA_real_,
                               upper_ci = NA_real_)
+                  )
+
+# counties
+airway_05_result_counties <- nemsqar::airway_05(df = NULL,
+                                               patient_scene_table = patient_scene_table |> dplyr::mutate(SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21 = factor(SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21)),
+                                               response_table = response_table,
+                                               arrest_table = arrest_table,
+                                               procedures_table = procedures_table,
+                                               vitals_table = vitals_table,
+                                               erecord_01_col = FACT_INCIDENT_PK,
+                                               incident_date_col = INCIDENT_DATE,
+                                               patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                               epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                               epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                               earrest_01_col = CARDIAC_ARREST_DURING_EMS_EVENT_WITH_CODE_E_ARREST_01,
+                                               eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                               evitals_01_col = VITALS_SIGNS_TAKEN_DATE_TIME_E_VITALS_01,
+                                               evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
+                                               eprocedures_01_col = PROCEDURE_PERFORMED_DATE_TIME_E_PROCEDURES_01,
+                                               eprocedures_02_col = PROCEDURE_PERFORMED_PRIOR_TO_EMS_CARE_E_PROCEDURES_02,
+                                               eprocedures_03_col = PROCEDURE_PERFORMED_DESCRIPTION_AND_CODE_E_PROCEDURES_03,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE,
+                                               .by = SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21
+                                               ) |>
+  tidyr::complete(SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_
+                              )
                   )
 
 # overall

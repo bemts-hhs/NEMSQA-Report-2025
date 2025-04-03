@@ -90,7 +90,7 @@ exam_table <- dplyr::bind_rows(exam_2021_clean,
                                exam_2024_4_clean,
                                exam_2024_5_clean,
                                exam_2024_6_clean
-)
+                               )
 
 
 ### medications tables ###########################################################
@@ -169,7 +169,15 @@ patient_scene_table <- patient_scene_clean |>
   ) |>
   clean_county_names_2(county_column = PATIENT_HOME_COUNTY_NAME_E_PATIENT_07,
                        zip_column = PATIENT_HOME_POSTAL_CODE_E_PATIENT_09
-  )
+  ) |>
+  fix_county_region(city_col = SCENE_INCIDENT_CITY_NAME_E_SCENE_17,
+                    county_col = SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21,
+                    region_col = `Region: Preparedness`,
+                    external_city = Iowa_Data_Final$name_city,
+                    external_county = county_data$County,
+                    external_region = county_data$`Region: Preparedness`
+                    )
+
 
 
 ### response tables ##############################################################
@@ -414,6 +422,40 @@ pediatrics_03b_result_regions <- nemsqar::pediatrics_03b(df = NULL,
                               prop_label = NA_character_,
                               lower_ci = NA_real_,
                               upper_ci = NA_real_)
+                  )
+
+# counties
+pediatrics_03b_result_counties <- nemsqar::pediatrics_03b(df = NULL,
+                                                         patient_scene_table = patient_scene_table |> dplyr::mutate(SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21 = factor(SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21)),
+                                                         response_table = response_table,
+                                                         exam_table = exam_table,
+                                                         medications_table = medications_table,
+                                                         erecord_01_col = FACT_INCIDENT_PK,
+                                                         incident_date_col = INCIDENT_DATE,
+                                                         patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                                         epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                                         epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                                         eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                                         eexam_01_col = PATIENT_WEIGHT_IN_KILOGRAMS_E_EXAM_01,
+                                                         eexam_02_col = PATIENT_LENGTH_BASED_COLOR_E_EXAM_02,
+                                                         emedications_03_col = MEDICATION_GIVEN_OR_ADMINISTERED_DESCRIPTION_AND_RXCUI_CODE_E_MEDICATIONS_03,
+                                                         emedications_04_col = MEDICATION_ADMINISTERED_ROUTE_E_MEDICATIONS_04,
+                                                         confidence_interval = TRUE,
+                                                         method = "w",
+                                                         conf.level = 0.95,
+                                                         correct = TRUE,
+                                               .by = SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21
+                                               ) |>
+  tidyr::complete(SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_
+                              )
                   )
 
 # overall

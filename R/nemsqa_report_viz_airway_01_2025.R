@@ -48,8 +48,7 @@ airway_01_results_gt <- airway_01_result_year |>
   # Add various source notes with icons from fontawesome
   gt::tab_source_note(source_note = gt::md(paste0(
     fontawesome::fa("note-sticky"),
-    " ",
-    "* Indicates masked data with n < 6."
+    " * Indicates masked data with n < 6."
   ))) |>
   tab_style_hhs(message_text = "`Comparison` indicates the result with 95% confidence intervals.",
                 border_cols = c(-1, -2),
@@ -66,19 +65,13 @@ airway_01_results_gt <- airway_01_result_year |>
 # save the table
 export_nemsqa_gt(gt_object = airway_01_results_gt, measure = "Airway-01", folder = "result", extension = "png")
 
-# FIXME try a tigris shapefile table
+# Load the tigris package shapefile into memory
 iowa_counties_sf <- tigris::counties(state = "Iowa")
 
 # summarize performance statewide over the timeframe of interest
-iowa_counties_sf |>
-  dplyr::left_join(county_data, by = dplyr::join_by(NAME == County)) |>
-  dplyr::left_join(airway_01_result_regions |>
-                     dplyr::summarize(numerator = sum(numerator, na.rm = TRUE),
-                                      denominator = sum(denominator, na.rm = TRUE),
-                                      prop = round(numerator / denominator, digits = 3),
-                                      .by = `Region: Preparedness`
-                     ), by = dplyr::join_by(`Region: Preparedness`)) |>
-  ggplot2::ggplot(ggplot2::aes(fill = prop)) +
-  ggplot2::geom_sf() +
-  viridis::scale_fill_viridis(option = "magma", direction = -1) +
-  ggplot2::theme_void()
+test_map <- results_to_county_map(df = airway_01_result_counties, add_text = TRUE)
+
+# save the plot
+ggplot2::ggsave(filename = "airway_01_result_map.png", plot = test_map, path = "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Analytics/BEMTS/NEMSQA Report/2025/output/Airway-01/result",
+                width = 7.5, height = 7.5
+                )

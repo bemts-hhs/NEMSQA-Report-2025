@@ -88,7 +88,16 @@ patient_scene_table <- patient_scene_clean |>
   ) |>
   clean_county_names_2(county_column = PATIENT_HOME_COUNTY_NAME_E_PATIENT_07,
                        zip_column = PATIENT_HOME_POSTAL_CODE_E_PATIENT_09
-  )
+  ) |>
+  fix_county_region(city_col = SCENE_INCIDENT_CITY_NAME_E_SCENE_17,
+                    county_col = SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21,
+                    region_col = `Region: Preparedness`,
+                    external_city = Iowa_Data_Final$name_city,
+                    external_county = county_data$County,
+                    external_region = county_data$`Region: Preparedness`
+                    )
+
+
 
 ### response tables ##############################################################
 response_2021 <- import_nemsqa_data(table = "response", year = 2021)
@@ -405,6 +414,45 @@ trauma_01_result_regions <- nemsqar::trauma_01(df = NULL,
                               prop_label = NA_character_,
                               lower_ci = NA_real_,
                               upper_ci = NA_real_)
+                  )
+
+# counties
+trauma_01_result_counties <- nemsqar::trauma_01(df = NULL,
+                                               patient_scene_table = patient_scene_table |> dplyr::mutate(SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21 = factor(SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21)),
+                                               response_table = response_table,
+                                               situation_table = situation_table,
+                                               disposition_table = disposition_table,
+                                               vitals_table = vitals_table,
+                                               erecord_01_col = FACT_INCIDENT_PK,
+                                               incident_date_col = INCIDENT_DATE,
+                                               patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+                                               epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+                                               epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+                                               esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
+                                               evitals_23_col = VITALS_TOTAL_GLASGOW_COMA_SCORE_GCS_E_VITALS_23,
+                                               evitals_26_col = VITALS_LEVEL_OF_RESPONSIVENESS_AVPU_E_VITALS_26,
+                                               eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+                                               edisposition_28_col = PATIENT_EVALUATION_CARE_3_4_IT_DISPOSITION_100_3_5_E_DISPOSITION_28,
+                                               transport_disposition_col = c(TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30,
+                                                                             DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112
+                                                                             ),
+                                               evitals_27_col = VITALS_PAIN_SCALE_SCORE_E_VITALS_27,
+                                               confidence_interval = TRUE,
+                                               method = "w",
+                                               conf.level = 0.95,
+                                               correct = TRUE,
+                                               .by = SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21
+                                               ) |>
+  tidyr::complete(SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21,
+                  measure,
+                  pop,
+                  fill = list(numerator = 0,
+                              denominator = 0,
+                              prop = NA_real_,
+                              prop_label = NA_character_,
+                              lower_ci = NA_real_,
+                              upper_ci = NA_real_
+                              )
                   )
 
 # overall

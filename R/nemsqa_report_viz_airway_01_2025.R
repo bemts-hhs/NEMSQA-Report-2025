@@ -69,7 +69,7 @@ export_nemsqa_gt(gt_object = airway_01_results_gt, measure = "Airway-01", folder
 iowa_counties_sf <- tigris::counties(state = "Iowa")
 
 # summarize performance statewide over the timeframe of interest
-test_map <- results_to_county_map(df = airway_01_result_counties, add_text = TRUE)
+test_map <- results_to_county_map(df = airway_01_result_counties, add_text = FALSE)
 
 # save the plot
 ggplot2::ggsave(filename = "airway_01_result_map.png", plot = test_map, path = "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Analytics/BEMTS/NEMSQA Report/2025/output/Airway-01/result",

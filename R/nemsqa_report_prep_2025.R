@@ -1185,22 +1185,34 @@ results_to_county_map <- function(df,
   # Extract the measure name for the plot title
   measure <- unique(df$measure)
 
+  # Aggregate statistics created from the nemsqar function
+  aggregates <- df |>
+    dplyr::summarize(
+      numerator = sum(numerator, na.rm = TRUE),
+      denominator = sum(denominator, na.rm = TRUE),
+      prop = round(numerator / denominator, digits = 3),
+      prop_label = dplyr::if_else(is.na(prop), "NA", traumar::pretty_percent(prop, n_decimal = 0)),
+      .by = {{ county_col }}
+    )
+
   # Prepare county-level data: Aggregate numerators and denominators, calculate proportions
   temp_obj <- iowa_counties_sf |>
     dplyr::left_join(county_data, by = dplyr::join_by(NAME == County)) |>
-    dplyr::left_join(df |>
-                       dplyr::summarize(numerator = sum(numerator, na.rm = TRUE),
-                                        denominator = sum(denominator, na.rm = TRUE),
-                                        prop = round(numerator / denominator, digits = 3),
-                                        prop_label = dplyr::if_else(is.na(prop), "NA", traumar::pretty_percent(prop, n_decimal = 0)),
-                                        .by = {{ county_col }}
-                       ), by = dplyr::join_by(NAME == {{ county_col }})) |>
+    dplyr::left_join(aggregates, by = dplyr::join_by(NAME == {{ county_col }})) |>
     tidyr::replace_na(replace = list(prop = 0)) |>
     dplyr::mutate(
       bins = cut(prop, breaks = c(seq(from = 0, to = 1, by = 0.1)), include.lowest = TRUE),
       bins = stringr::str_replace_all(string = bins, pattern = "\\[|\\]|\\(|\\)", replacement = ""),
       bins = stringr::str_replace_all(string = bins, pattern = ",", replacement = "-")
     )
+
+  # get missing or OOS county data
+  oos_missing <- aggregates |>
+    dplyr::filter({{ county_col }} == "OOS or Missing") |>
+    dplyr::pull(prop_label)
+
+  # get missing or OOS county text for caption
+  oos_missing_caption <- glue::glue("Performance for responses to Out of State or Missing counties: {oos_missing}")
 
   # Define ggplot object with text in county borders
   if (add_text) {
@@ -1219,18 +1231,19 @@ results_to_county_map <- function(df,
       ggplot2::scale_color_identity() +  # Use the colors as-is without mapping to a scale
       ggplot2::labs(fill = "",
                     title = glue::glue("NEMSQA {measure} Overall Performance: Iowa"),
-                    subtitle = "Source: Iowa ImageTrend Elite || Years: 2021-2024"
+                    subtitle = "Source: Iowa ImageTrend Elite || Years: 2021-2024",
+                    caption = oos_missing_caption
       ) +
       ggplot2::theme_void() +
       ggplot2::theme(
         plot.title = ggplot2::element_text(hjust = 0.5, size = 20, face = "bold", family = "Work Sans", color = "#19405B"),
         plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 18, face = "bold", family = "Work Sans", color = "#70C8B8"),
-        legend.position = "bottom",
+        legend.position = "top",
         legend.direction = "horizontal",
         legend.text = ggplot2::element_text(size = 14, family = "Work Sans", face = "bold"),  # Increase legend text size
         legend.key.size = ggplot2::unit(1.5, "lines"),  # Increase fill box size
-        legend.margin = ggplot2::margin(t = -5, unit = "pt"),  # Move legend up
-        legend.box.margin = ggplot2::margin(t = -5, unit = "pt") # Reduce space
+        legend.margin = ggplot2::margin(t = 10, unit = "pt"),  # Move legend up
+        plot.caption = ggplot2::element_text(hjust = 0, size = 14, face = "bold", family = "Work Sans", color = "#03617A")
       ) +
       ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1))
 
@@ -1244,18 +1257,19 @@ results_to_county_map <- function(df,
     ggplot2::scale_color_identity() +  # Use the colors as-is without mapping to a scale
     ggplot2::labs(fill = "",
                   title = glue::glue("NEMSQA {measure} Overall Performance: Iowa"),
-                  subtitle = "Source: Iowa ImageTrend Elite || Years: 2021-2024"
+                  subtitle = "Source: Iowa ImageTrend Elite || Years: 2021-2024",
+                  caption = oos_missing_caption
     ) +
     ggplot2::theme_void() +
     ggplot2::theme(
       plot.title = ggplot2::element_text(hjust = 0.5, size = 20, face = "bold", family = "Work Sans", color = "#19405B"),
       plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 18, face = "bold", family = "Work Sans", color = "#70C8B8"),
-      legend.position = "bottom",
+      legend.position = "top",
       legend.direction = "horizontal",
       legend.text = ggplot2::element_text(size = 14, family = "Work Sans", face = "bold"),  # Increase legend text size
       legend.key.size = ggplot2::unit(1.5, "lines"),  # Increase fill box size
-      legend.margin = ggplot2::margin(t = -5, unit = "pt"),  # Move legend up
-      legend.box.margin = ggplot2::margin(t = -5, unit = "pt") # Reduce space
+      legend.margin = ggplot2::margin(t = 10, unit = "pt"),  # Move legend up
+      plot.caption = ggplot2::element_text(hjust = 0, size = 14, face = "bold", family = "Work Sans", color = "#03617A")
     ) +
     ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1))
 

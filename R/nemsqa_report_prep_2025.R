@@ -1240,8 +1240,8 @@ results_to_county_map <- function(df,
         plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 18, face = "bold", family = "Work Sans", color = "#70C8B8"),
         legend.position = "top",
         legend.direction = "horizontal",
-        legend.text = ggplot2::element_text(size = 14, family = "Work Sans", face = "bold"),  # Increase legend text size
-        legend.key.size = ggplot2::unit(1.5, "lines"),  # Increase fill box size
+        legend.text = ggplot2::element_text(size = 12, family = "Work Sans", face = "bold"),  # Increase legend text size
+        legend.key.size = ggplot2::unit(1.25, "lines"),  # Increase fill box size
         legend.margin = ggplot2::margin(t = 10, unit = "pt"),  # Move legend up
         plot.caption = ggplot2::element_text(hjust = 0, size = 14, face = "bold", family = "Work Sans", color = "#03617A")
       ) +
@@ -1266,8 +1266,8 @@ results_to_county_map <- function(df,
       plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 18, face = "bold", family = "Work Sans", color = "#70C8B8"),
       legend.position = "top",
       legend.direction = "horizontal",
-      legend.text = ggplot2::element_text(size = 14, family = "Work Sans", face = "bold"),  # Increase legend text size
-      legend.key.size = ggplot2::unit(1.5, "lines"),  # Increase fill box size
+      legend.text = ggplot2::element_text(size = 12, family = "Work Sans", face = "bold"),  # Increase legend text size
+      legend.key.size = ggplot2::unit(1.25, "lines"),  # Increase fill box size
       legend.margin = ggplot2::margin(t = 10, unit = "pt"),  # Move legend up
       plot.caption = ggplot2::element_text(hjust = 0, size = 14, face = "bold", family = "Work Sans", color = "#03617A")
     ) +

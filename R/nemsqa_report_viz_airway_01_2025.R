@@ -73,5 +73,5 @@ test_map <- results_to_county_map(df = airway_01_result_counties, add_text = FAL
 
 # save the plot
 ggplot2::ggsave(filename = "airway_01_result_map.png", plot = test_map, path = "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Analytics/BEMTS/NEMSQA Report/2025/output/Airway-01/result",
-                width = 7.5, height = 7.5
+                width = 7, height = 7
                 )

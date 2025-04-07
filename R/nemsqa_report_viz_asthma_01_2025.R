@@ -1,29 +1,29 @@
-### IOWA NEMSQA REPORT VISUALIZATIONS AIRWAY-01 2025 ---------------------------
+### IOWA NEMSQA REPORT VISUALIZATIONS Asthma-01 2025 ---------------------------
 
 ###_____________________________________________________________________________
-# this script will contain all reporting visualizations for Airway-01 use:
+# this script will contain all reporting visualizations for Asthma-01 use:
 # nemsqa_report_prep_2025.R to get critical functions into memory
-# nemsqa_report_airway_01_2025.R to generate statistical files for the report
+# nemsqa_report_asthma_01_2025.R to generate statistical files for the report
 ###_____________________________________________________________________________
 # assume:
 # that nemsqa_report_prep_2025.R was already ran to load needed packages
 # and project-specific custom functions in the project
-# nemsqa_report_airway_01_2025.R was ran to generate statistical files
+# nemsqa_report_asthma_01_2025.R was ran to generate statistical files
 ###_____________________________________________________________________________
 
 ### DATA -----------------------------------------------------------------------
 
 # import statistical outputs for this measure
-import_nemsqa_statistical_files(measure = "Airway-01")
+import_nemsqa_statistical_files(measure = "Asthma-01")
 
 ### TABLES ---------------------------------------------------------------------
 
 ### population data ############################################################
 
 # generate the population gt table
-airway_01_pop_gt <- airway_01_pop_years |>
+asthma_01_pop_gt <- asthma_01_pop_years |>
   prepare_population_statistical_file() |>
-  population_statistical_file_gt(measure = "Airway-01", fig_dim = c(8, 40)) |>
+  population_statistical_file_gt(measure = "Asthma-01", fig_dim = c(8, 40)) |>
   tab_style_hhs(
     message_text = "* Indicates masked data with n < 6. Population Trend horizontal lines indicate the arithmetic mean for that population group.",
     border_cols = -1,
@@ -39,8 +39,8 @@ airway_01_pop_gt <- airway_01_pop_years |>
 
 # save the table
 export_nemsqa_gt(
-  gt_object = airway_01_pop_gt,
-  measure = "Airway-01",
+  gt_object = asthma_01_pop_gt,
+  measure = "Asthma-01",
   folder = "pop",
   extension = "png"
 )
@@ -48,7 +48,7 @@ export_nemsqa_gt(
 ### results data ###############################################################
 
 # generate the results gt table
-airway_01_results_gt <- airway_01_result_year |>
+asthma_01_results_gt <- asthma_01_result_year |>
   prepare_results_statistical_file() |>
   results_statistical_file_gt(groups = c("INCIDENT_YEAR")) |>
   # Add various source notes with icons from fontawesome
@@ -71,8 +71,8 @@ airway_01_results_gt <- airway_01_result_year |>
 
 # save the table
 export_nemsqa_gt(
-  gt_object = airway_01_results_gt,
-  measure = "Airway-01",
+  gt_object = asthma_01_results_gt,
+  measure = "Asthma-01",
   folder = "result",
   extension = "png"
 )
@@ -82,18 +82,15 @@ export_nemsqa_gt(
 iowa_counties_sf <- prepare_map_data()
 
 # summarize performance statewide over the timeframe of interest
-airway_01_result_counties_map <- results_to_county_map(
-  df = airway_01_result_counties,
-  add_text = FALSE,
-  format = "percent",
-  by = 0.1
-)
+asthma_01_result_counties_map <- results_to_county_map(df = asthma_01_result_counties,
+                                                       add_text = FALSE,
+                                                       format = "percent")
 
 # save the plot
 ggplot2::ggsave(
-  filename = "airway_01_result_counties_map.png",
-  plot = airway_01_result_counties_map,
-  path = "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Analytics/BEMTS/NEMSQA Report/2025/output/Airway-01/result",
+  filename = "asthma_01_result_counties_map.png",
+  plot = asthma_01_result_counties_map,
+  path = "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Analytics/BEMTS/NEMSQA Report/2025/output/Asthma-01/result",
   width = 7,
   height = 7
 )

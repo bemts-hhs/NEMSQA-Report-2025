@@ -1,6 +1,11 @@
 ### IOWA NEMSQAR REPORT PREP 2025 ----------------------------------------------
 
 # This script prepares for the analyses using the `nemsqar` package v1.1.0
+# For the shapefiles, it is assumed that the files are downloaded from
+# https://www.census.gov/cgi-bin/geo/shapefiles/index.php using the year 2024
+# and then utilizing the Counties (and equivalent), States (and equivalent), and
+# Zip Code Tabulation Areas (ZCTAS) options in the dropdown dialogue to download
+# the files manually and put them in the directory used here.
 
 ### PACKAGES -------------------------------------------------------------------
 
@@ -11,7 +16,7 @@
 # install.packages(c("tidyverse", "traumar", "devtools", "remotes", "janitor",
 #                    "gt", "gtsummary", "gtExtras", "zipcodeR", "naniar",
 #                    "ggrepel", "devtools", "renv", "roxygen2",
-#                    "roxygen2md", "nemsqar", "extrafont", "patchwork"
+#                    "roxygen2md", "nemsqar", "extrafont", "patchwork", "showtext"
 #                   ))
 
 # load packages ----
@@ -34,6 +39,46 @@ library(roxygen2md)
 library(extrafont)
 library(fontawesome)
 library(patchwork)
+library(systemfonts)
+library(showtext)
+
+# showtext setup ----
+
+# run showtext auto, use throughout project
+showtext::showtext_auto()
+
+# get 300 dpi with showtext
+showtext::showtext_opts(dpi = 300)
+
+# get work sans fonts of interest
+all_fonts <- systemfonts::system_fonts()
+
+# regular
+work_sans <- all_fonts |>
+  dplyr::filter(name == "WorkSans-Regular") |>
+  dplyr::pull(path)
+
+# semibold
+work_sans_semibold <- all_fonts |>
+  dplyr::filter(name == "WorkSans-SemiBold") |>
+  dplyr::pull(path)
+
+# extrabold
+work_sans_extrabold <- all_fonts |>
+  dplyr::filter(name == "WorkSans-ExtraBold") |>
+  dplyr::pull(path)
+
+# use sysfonts to load the fonts
+sysfonts::font_add(family = "Work Sans",
+                   regular = work_sans,
+                   bold = work_sans_semibold
+                   )
+
+sysfonts::font_add(family = "Work Sans",
+                   regular = work_sans,
+                   bold = work_sans_extrabold
+                   )
+
 
 # Handy Functions --------------------------------------------------------------
 
@@ -636,6 +681,78 @@ generate_random_ID <- function(n, set_seed = 12345) {
   return(random_strings)
 }
 
+#_____________________________________________________________________________
+# Function: prepare_map_data()
+#_____________________________________________________________________________
+# This function loads and prepares shapefile data for mapping purposes,
+# specifically filtering to Iowa (STATEFP == "19"). It supports three shapefile
+# types: county, state, and ZIP Code Tabulation Area (ZCTA).
+#
+# Arguments:
+#   - type: Character. Specifies the geographic unit to load. Must be one of:
+#           "county", "state", or "zcta". Default is "county".
+#
+# Returns:
+#   - A tibble (class `sf` with tibble structure) containing shapefile geometry
+#     and attribute data, filtered to Iowa (STATEFP == "19").
+#
+# Notes:
+#   - Uses {sf} for reading shapefiles and {dplyr} for filtering.
+#   - Relies on standardized 2024 TIGER/Line shapefiles located in a
+#     predetermined directory.
+#   - Ensures consistent file selection and state filtering for downstream
+#     geospatial analysis.
+#_____________________________________________________________________________
+prepare_map_data <- function(type = c("county", "state", "zcta")) {
+
+  # Validate the `type` argument and resolve its value
+  type <- match.arg(type, choices = c("county", "state", "zcta"))
+
+  # Determine the correct shapefile name based on `type`
+  file <- if (type == "county") {
+    "tl_2024_us_county.shp"
+  } else if (type == "state") {
+    "tl_2024_us_state.shp"
+  } else if (type == "zcta") {
+    "tl_2024_us_zcta520.shp"
+  }
+
+  # Construct the full file path to the shapefile
+  filepath <- file.path(
+    "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Analytics/BEMTS/NEMSQA Report/2025/shapefiles",
+    type,
+    file
+  )
+
+  # Validate that the shapefile exists
+  if (!file.exists(filepath)) {
+    cli::cli_abort(
+      "The shapefile {.file {filepath}} does not exist.
+      Please verify the path and file structure."
+    )
+  }
+
+  # Attempt to read the shapefile using {sf}
+  shapefile <- tryCatch(
+    sf::read_sf(dsn = filepath, as_tibble = TRUE),
+    error = function(e) {
+      cli::cli_abort("Failed to read shapefile: {.file {filepath}}. \nError: {e$message}")
+    }
+  )
+
+  # Validate that the required field `STATEFP` exists
+  if (!"STATEFP" %in% names(shapefile)) {
+    cli::cli_abort("The shapefile is missing the required field {.var STATEFP}.")
+  }
+
+  # Filter the shapefile to only include records from Iowa (FIPS code "19")
+  shapefile <- shapefile |>
+    dplyr::filter(STATEFP == "19")
+
+  # Return the filtered shapefile
+  return(shapefile)
+}
+
 # get location data
 # Iowa county data
 county_data <- readxl::read_excel(path = "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Desktop/Analytics/Analytics Builds/GitHub/Reference-Files/IA Counties, Regions.xlsx")
@@ -873,6 +990,83 @@ missing_location_data <- tibble::tibble(
 Iowa_Data_Final <- dplyr::bind_rows(Iowa_Data_Final, missing_location_data)
 
 ### DATA MANIPULATION FACILITIES ===============================================
+
+#_____________________________________________________________________________
+# Function: format_cut_levels()
+#_____________________________________________________________________________
+# Description:
+#   Converts a vector of interval-style bin labels (e.g., "(0.1,0.2]") into
+#   a more readable percentage range format (e.g., "10%-20%").
+#
+#   This is useful for relabeling cut() interval outputs in visualizations or
+#   summary tables with more user-friendly percent formatting.
+#
+# Arguments:
+#   - bins: A character or factor vector containing interval labels in the
+#           standard cut() format (e.g., "(0.1,0.2]", "[0.3,0.4)", etc.).
+#
+# Returns:
+#   - A character vector with formatted percentage ranges (e.g., "30%-40%").
+#
+# Dependencies:
+#   - Uses {cli} for input validation errors.
+#_____________________________________________________________________________
+format_bin_levels <- function(bins, format = c("decimal", "percent")) {
+
+  # --- DATA VALIDATION ---
+
+  # Validate `format` choices
+  format <- match.arg(format, choices = c("decimal", "percent"))
+
+  # Check that 'bins' argument was supplied
+  if (missing(bins)) {
+    cli::cli_abort("The {.arg bins} argument is missing. Please supply a character or factor vector.")
+  }
+
+  # Check that input is character or factor
+  if (!is.character(bins) && !is.factor(bins)) {
+    cli::cli_abort("Input must be a character vector or factor. Input of class {.cls {class(bins)}} is not supported.")
+  }
+
+  # --- TRANSFORMATION LOGIC ---
+
+  # Trim whitespace to ensure consistency in parsing
+  bins_trim <- bins |> trimws()
+
+  # Remove brackets and parentheses (e.g., "(0.1,0.2]" → "0.1,0.2")
+  bins_sub <- bins_trim |> gsub(pattern = "\\[|\\]|\\(|\\)", replacement = "", x = _)
+
+  # Optionally format as a percentage
+  if (format == "percent") {
+
+  # Split the cleaned strings at the comma to isolate lower/upper bounds
+  bins_split <- bins_sub |> strsplit(x = _, split = ",")
+
+  # Convert each lower/upper bound to a numeric percentage and format as text
+  bins_list <- bins_split |> lapply(X = _, function(x) {
+    lower <- as.numeric(x[1]) * 100
+    upper <- as.numeric(x[2]) * 100
+    paste0(round(lower), "%-", round(upper), "%")
+  })
+
+  # Unlist to convert from list to character vector
+  bins_out <- unlist(bins_list)
+
+  # Return the formatted bin labels
+  return(bins_out)
+
+  # Otherwise just return the trimmed/formatted bins
+  } else if (format == "decimal") {
+
+    # Remove comma
+    bins_sub <- bins_sub |> gsub(pattern = ",", replacement = "-", x = _)
+
+    # Return the formatted bin labels
+    return(bins_sub)
+
+  }
+
+}
 
 #_____________________________________________________________________________
 # Function: fix_county_region()
@@ -1157,6 +1351,8 @@ import_nemsqa_statistical_files <- function(location = NULL, measure) {
 #   - df: A data frame containing measure results by county.
 #   - county_col: The column in `df` containing county names.
 #   - add_text: Logical, if TRUE, adds text labels to the map.
+#   - format: Logical, if TRUE, formats `bins` as a percentage.
+#     This mostly affects the plot legend.
 #
 # Returns:
 #   - A ggplot object visualizing the performance data by county.
@@ -1164,12 +1360,14 @@ import_nemsqa_statistical_files <- function(location = NULL, measure) {
 # Notes:
 #   - Requires {ggplot2}, {dplyr}, {tidyr}, {stringr}, {glue}, and {sf}.
 #   - Uses {traumar::pretty_percent()} to format proportions.
-#   - The `bins` variable categorizes proportions into 10% intervals.
+#   - The `bins` variable categorizes proportions into (default = 10%) intervals.
 #   - The color scale is based on the `magma` palette from {viridis}.
 #_____________________________________________________________________________
 results_to_county_map <- function(df,
                                   county_col = SCENE_INCIDENT_COUNTY_NAME_E_SCENE_21,
-                                  add_text = FALSE
+                                  add_text = FALSE,
+                                  format = c("decimal", "percent"),
+                                  by = 0.1
                                   ) {
 
   # Validate input: `df` must be a data frame or tibble
@@ -1185,25 +1383,63 @@ results_to_county_map <- function(df,
   # Extract the measure name for the plot title
   measure <- unique(df$measure)
 
-  # Aggregate statistics created from the nemsqar function
-  aggregates <- df |>
-    dplyr::summarize(
-      numerator = sum(numerator, na.rm = TRUE),
-      denominator = sum(denominator, na.rm = TRUE),
-      prop = round(numerator / denominator, digits = 3),
-      prop_label = dplyr::if_else(is.na(prop), "NA", traumar::pretty_percent(prop, n_decimal = 0)),
-      .by = {{ county_col }}
-    )
+  # Check if there is an "all" category in the statistics
+  # groupings, and if so just use that for the counties
+  populations <- unique(df$pop)
+
+  if (sum(grepl(
+    pattern = "all",
+    x = populations,
+    ignore.case = TRUE
+  ), na.rm = TRUE) > 0) {
+    check_result <- TRUE
+
+  } else {
+    check_result <- FALSE
+
+  }
+
+  # If there is an "all" category, use it
+  if (!check_result) {
+    # Aggregate statistics created from the nemsqar function
+    aggregates <- df |>
+      dplyr::summarize(
+        numerator = sum(numerator, na.rm = TRUE),
+        denominator = sum(denominator, na.rm = TRUE),
+        prop = round(numerator / denominator, digits = 3),
+        prop_label = dplyr::if_else(
+          is.na(prop),
+          "NA",
+          traumar::pretty_percent(prop, n_decimal = 0)
+        ),
+        .by = {{ county_col }}
+      )
+
+  } else if (check_result) {
+
+    # Aggregate statistics created from the nemsqar function
+    aggregates <- df |>
+      dplyr::filter(pop == "All") |>
+      dplyr::mutate(
+        prop_label = dplyr::if_else(
+          is.na(prop),
+          "NA",
+          traumar::pretty_percent(prop, n_decimal = 0)
+        )
+      )
+
+  }
 
   # Prepare county-level data: Aggregate numerators and denominators, calculate proportions
+  # Optionally format the bins as percentages
   temp_obj <- iowa_counties_sf |>
     dplyr::left_join(county_data, by = dplyr::join_by(NAME == County)) |>
     dplyr::left_join(aggregates, by = dplyr::join_by(NAME == {{ county_col }})) |>
     tidyr::replace_na(replace = list(prop = 0)) |>
     dplyr::mutate(
-      bins = cut(prop, breaks = c(seq(from = 0, to = 1, by = 0.1)), include.lowest = TRUE),
-      bins = stringr::str_replace_all(string = bins, pattern = "\\[|\\]|\\(|\\)", replacement = ""),
-      bins = stringr::str_replace_all(string = bins, pattern = ",", replacement = "-")
+      bins = cut(prop, breaks = c(seq(from = 0, to = 1, by = by)), include.lowest = TRUE),
+      bins = format_bin_levels(bins = bins, format = format),
+      bins = factor(bins)
     )
 
   # get missing or OOS county data
@@ -1217,65 +1453,127 @@ results_to_county_map <- function(df,
   # Define ggplot object with text in county borders
   if (add_text) {
 
-    temp_plot <- temp_obj |>
-      dplyr::mutate(text_color = dplyr::if_else(prop < 0.3, "black", dplyr::if_else(is.na(prop), "black", "white")) # Define text color
-                    ) |>
-      ggplot2::ggplot(ggplot2::aes(fill = bins)) +
-      ggplot2::geom_sf() +
-      ggplot2::geom_sf_text(
-        ggplot2::aes(label = prop_label, color = text_color), # Ensure text_color is inside aes()
-        fontface = "bold",
-        family = "Work Sans"
-      ) +
-      ggplot2::scale_fill_viridis_d(direction = -1, option = "magma") +
-      ggplot2::scale_color_identity() +  # Use the colors as-is without mapping to a scale
-      ggplot2::labs(fill = "",
-                    title = glue::glue("NEMSQA {measure} Overall Performance: Iowa"),
-                    subtitle = "Source: Iowa ImageTrend Elite || Years: 2021-2024",
-                    caption = oos_missing_caption
-      ) +
-      ggplot2::theme_void() +
-      ggplot2::theme(
-        plot.title = ggplot2::element_text(hjust = 0.5, size = 20, face = "bold", family = "Work Sans", color = "#19405B"),
-        plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 18, face = "bold", family = "Work Sans", color = "#70C8B8"),
-        legend.position = "top",
-        legend.direction = "horizontal",
-        legend.text = ggplot2::element_text(size = 12, family = "Work Sans", face = "bold"),  # Increase legend text size
-        legend.key.size = ggplot2::unit(1.25, "lines"),  # Increase fill box size
-        legend.margin = ggplot2::margin(t = 10, unit = "pt"),  # Move legend up
-        plot.caption = ggplot2::element_text(hjust = 0, size = 14, face = "bold", family = "Work Sans", color = "#03617A")
-      ) +
-      ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1))
+    temp_plot <- suppressWarnings(
+      temp_obj |>
+        # Define text color
+        dplyr::mutate(text_color = dplyr::if_else(
+          prop < 0.3, "black", dplyr::if_else(is.na(prop), "black", "white")
+        )) |>
+        ggplot2::ggplot(ggplot2::aes(fill = bins)) +
+            ggplot2::geom_sf(color = "#70C8B8") +
+            ggplot2::geom_sf_text(
+            # Ensure text_color is inside aes()
+            ggplot2::aes(label = prop_label, color = text_color),
+
+            fontface = "bold",
+            family = "Work Sans"
+          ) +
+          ggplot2::scale_fill_viridis_d(direction = -1, option = "magma") +
+          ggplot2::scale_color_identity() +  # Use the colors as-is without mapping to a scale
+          ggplot2::labs(
+            fill = "",
+            title = glue::glue("NEMSQA {measure} Overall Performance: Iowa"),
+            subtitle = "Source: Iowa ImageTrend Elite || Years: 2021-2024",
+            caption = oos_missing_caption
+          ) +
+          ggplot2::theme_void() +
+          ggplot2::theme(
+            plot.title = ggplot2::element_text(
+              hjust = 0.5,
+              size = 20,
+              face = "bold",
+              family = "Work Sans",
+              color = "#19405B"
+            ),
+            plot.subtitle = ggplot2::element_text(
+              hjust = 0.5,
+              size = 18,
+              face = "bold",
+              family = "Work Sans",
+              color = "#70C8B8"
+            ),
+            legend.position = "top",
+            legend.direction = "horizontal",
+            legend.text = ggplot2::element_text(
+              size = 12,
+              family = "Work Sans",
+              face = "bold"
+            ),
+            # Increase legend text size
+            legend.key.size = ggplot2::unit(1.25, "lines"),
+            # Increase fill box size
+            legend.margin = ggplot2::margin(t = 10, unit = "pt"),
+            # Move legend up
+            plot.caption = ggplot2::element_text(
+              hjust = 0,
+              size = 14,
+              face = "bold",
+              family = "Work Sans",
+              color = "#03617A"
+            )
+          )
+
+        )
 
   # Define ggplot object without text in county borders
   } else if (!add_text) {
 
-    temp_plot <- temp_obj |>
-    ggplot2::ggplot(ggplot2::aes(fill = bins)) +
-    ggplot2::geom_sf() +
-    ggplot2::scale_fill_viridis_d(direction = -1, option = "magma") +
-    ggplot2::scale_color_identity() +  # Use the colors as-is without mapping to a scale
-    ggplot2::labs(fill = "",
-                  title = glue::glue("NEMSQA {measure} Overall Performance: Iowa"),
-                  subtitle = "Source: Iowa ImageTrend Elite || Years: 2021-2024",
-                  caption = oos_missing_caption
-    ) +
-    ggplot2::theme_void() +
-    ggplot2::theme(
-      plot.title = ggplot2::element_text(hjust = 0.5, size = 20, face = "bold", family = "Work Sans", color = "#19405B"),
-      plot.subtitle = ggplot2::element_text(hjust = 0.5, size = 18, face = "bold", family = "Work Sans", color = "#70C8B8"),
-      legend.position = "top",
-      legend.direction = "horizontal",
-      legend.text = ggplot2::element_text(size = 12, family = "Work Sans", face = "bold"),  # Increase legend text size
-      legend.key.size = ggplot2::unit(1.25, "lines"),  # Increase fill box size
-      legend.margin = ggplot2::margin(t = 10, unit = "pt"),  # Move legend up
-      plot.caption = ggplot2::element_text(hjust = 0, size = 14, face = "bold", family = "Work Sans", color = "#03617A")
-    ) +
-    ggplot2::guides(fill = ggplot2::guide_legend(nrow = 1))
+    temp_plot <- suppressWarnings(
+      temp_obj |>
+        ggplot2::ggplot(ggplot2::aes(fill = bins)) +
+        ggplot2::geom_sf(color = "#70C8B8") +
+        ggplot2::scale_fill_viridis_d(direction = -1, option = "magma") +
+        ggplot2::scale_color_identity() +  # Use the colors as-is without mapping to a scale
+        ggplot2::labs(
+          fill = "",
+          title = glue::glue("NEMSQA {measure} Overall Performance: Iowa"),
+          subtitle = "Source: Iowa ImageTrend Elite || Years: 2021-2024",
+          caption = oos_missing_caption
+        ) +
+        ggplot2::theme_void() +
+        ggplot2::theme(
+          plot.title = ggplot2::element_text(
+            hjust = 0.5,
+            size = 20,
+            face = "bold",
+            family = "Work Sans",
+            color = "#19405B"
+          ),
+          plot.subtitle = ggplot2::element_text(
+            hjust = 0.5,
+            size = 18,
+            face = "bold",
+            family = "Work Sans",
+            color = "#70C8B8"
+          ),
+          legend.position = "top",
+          legend.direction = "horizontal",
+          legend.text = ggplot2::element_text(
+            size = 12,
+            family = "Work Sans",
+            face = "bold"
+          ),
+          # Increase legend text size
+          legend.key.size = ggplot2::unit(1.25, "lines"),
+          # Increase fill box size
+          legend.margin = ggplot2::margin(t = 10, unit = "pt"),
+          # Move legend up
+          plot.caption = ggplot2::element_text(
+            hjust = 0,
+            size = 14,
+            face = "bold",
+            family = "Work Sans",
+            color = "#03617A"
+          )
+        )
+
+    )
 
   }
 
+
   return(temp_plot)
+
 
   }
 
@@ -1711,7 +2009,7 @@ tab_style_hhs <- function(gt_object, row_groups = 14, column_labels = 14,
   return(out)
 }
 
-### DATA EXPORT FACILITY =======================================================
+### DATA EXPORT FACILITIES =====================================================
 
 # Export NEMSQA Data to CSV
 # This function exports objects from the global environment that match a

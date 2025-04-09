@@ -95,5 +95,5 @@ ggplot2::ggsave(
   plot = airway_01_result_counties_map,
   path = "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Analytics/BEMTS/NEMSQA Report/2025/output/Airway-01/result",
   width = 7,
-  height = 7
+  height = 6
 )

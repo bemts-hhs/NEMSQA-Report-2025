@@ -1522,6 +1522,13 @@ results_to_county_map <- function(df,
       temp_obj |>
         ggplot2::ggplot(ggplot2::aes(fill = bins)) +
         ggplot2::geom_sf(color = "#70C8B8") +
+        ggplot2::geom_sf_text(
+          # Ensure text_color is inside aes()
+          ggplot2::aes(label = dplyr::if_else(prop_label == "NA", prop_label, ""), color = "black"),
+
+          fontface = "bold",
+          family = "Work Sans"
+        ) +
         ggplot2::scale_fill_viridis_d(direction = -1, option = "magma") +
         ggplot2::scale_color_identity() +  # Use the colors as-is without mapping to a scale
         ggplot2::labs(
@@ -2086,13 +2093,15 @@ export_nemsqa_data <- function(pattern, measure, folder = c("population", "resul
 #   - path: Optional. The directory where the file should be saved. If not
 #           provided, it defaults to the standardized NEMSQA report path.
 #   - extension: Optional. The file extension/type. Defaults to ".docx".
+#   - ...: Optional. Arguments passed to gt::gtsave(...).
 #_____________________________________________________________________________
 export_nemsqa_gt <- function(gt_object,
                              measure,
                              folder = c("population", "result"),
                              filename = NULL,
                              path = NULL,
-                             extension = NULL) {
+                             extension = NULL,
+                             ...) {
 
   # Validate folder selection
   folder <- match.arg(folder, choices = c("population", "result"))
@@ -2141,7 +2150,7 @@ export_nemsqa_gt <- function(gt_object,
   full_path <- file.path(path, filename)
 
   # Export the gt table
-  gt::gtsave(gt_object, filename = filename, path = path)
+  gt::gtsave(gt_object, filename = filename, path = path, ...)
 
   # Confirmation message
   cli::cli_inform(c("✔" = "GT table successfully exported: {full_path}"))

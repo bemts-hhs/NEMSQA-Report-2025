@@ -15,6 +15,11 @@ knitr::opts_chunk$set(
 
 # NEMSQA Report 2025 <img src="man/figures/HHS PFP 5.png" align="right" width="250" alt="" />
 
+<!-- badges: start -->
+[![RStudio Project](https://img.shields.io/badge/RStudio-Project-blue)](https://posit.co)
+[![Open Source](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+<!-- badges: end -->
+
 The NEMSQA Report 2025 analyzes National EMS Quality Alliance (NEMSQA) measures from 2021-2024 for the state of Iowa, assessing EMS service quality. This project uses the {`nemsqar`} R package, developed to facilitate standardized EMS quality reporting.
 
 This report is completed by the Bureau of Emergency Medical and Trauma Services (BEMTS) epidemiologist to gauge Iowa EMS agencys' performance against the NEMSQA national benchmarks.  In this way, BEMTS can assess patient care quality using standardized measures. The {`nemsqar`} package facilitates easy measure calculation for continuous quality improvement.
@@ -34,31 +39,53 @@ install.packages("nemsqar")
 
 The National EMS Quality Alliance (NEMSQA) Measure Set includes a comprehensive list of EMS quality measures that have been developed and approved for national use. These measures are intended to guide EMS agencies in collecting data to assess and improve patient care. Below are the measures approved by the NEMSQA Measure Development Committee and Board of Trustees as of August 2019. Access to the full technical specifications for these measures is available on the NEMSQA website after creating a user profile. 
 
-| **Measure ID**     | **Description**                                                                                                                  | **Type** | **National Quality Strategy Domain** | **Developed in Package?** |
-|--------------------|----------------------------------------------------------------------------------------------------------------------------------|----------|--------------------------------------|
-| Airway-01          | Percentage of EMS responses from a 911 request with successful advanced airway placement on first attempt without hypotension or hypoxia in peri-intubation period. | Outcome  | Clinical Process – Effectiveness     |
-| Airway-05          | Percentage of intubation procedures from a 911 request in which adequate patient oxygen levels were achieved prior to intubation. | Process  | Patient Safety                       |
-| Airway-18          | Percentage of successful advanced airway procedures from a 911 request in which waveform capnography is used for confirmation and monitoring. | Process  | Clinical Process – Effectiveness     |
-| Asthma-01          | Percentage of EMS responses from a 911 request for asthma patients receiving an aerosolized beta agonist.                         | Process  | Clinical Process – Effectiveness     |
-| Hypoglycemia-01    | Percentage of EMS responses from a 911 request for symptomatic hypoglycemia patients who receive treatment to correct hypoglycemia. | Process  | Clinical Process – Effectiveness     |
-| Respiratory-01     | Percentage of EMS responses from a 911 request for respiratory distress patients with a respiratory assessment.                   | Process  | Clinical Process – Effectiveness     |
-| Respiratory-02     | Percentage of EMS responses from a 911 request for patients with hypoxia receiving oxygen.                                        | Process  | Clinical Process – Effectiveness     |
-| Pediatrics-03b     | Percentage of EMS responses from a 911 request for patients <18 years receiving a weight-based medication with documented weight in kg or length-based estimate. | Process  | Patient Safety                       |
-| Safety-01          | Percentage of EMS responses from a 911 request without lights and sirens.                                                         | Process  | Patient Safety                       |
-| Safety-02          | Percentage of EMS transports from a 911 request without lights and sirens during patient transport.                               | Process  | Patient Safety                       |
-| Safety-04          | Percentage of EMS transports from a 911 or interfacility request for patients <8 years transported with a pediatric restraint device. | Process  | Patient Safety                       |
-| Seizure-02         | Percentage of EMS responses from a 911 request for patients with status epilepticus who received benzodiazepine.                  | Process  | Clinical Process – Effectiveness     |
-| Stroke-01          | Percentage of EMS responses from a 911 request for suspected stroke patients who had a stroke assessment.                         | Process  | Clinical Process – Effectiveness     |
-| Syncope-01         | Percentage of EMS responses from a 911 request for syncope patients with a 12-lead (or greater) ECG performed.                    | Process  | Clinical Process – Effectiveness     |
-| TBI-01             | Percentage of EMS transports from a 911 request for suspected TBI patients with documented oxygen level, ETCO2, and systolic BP. | Process  | Clinical Process – Effectiveness     |
-| Trauma-01          | Percentage of EMS responses from a 911 request for injury patients assessed for pain.                                            | Process  | Patient Experience                   |
-| Trauma-03          | Percentage of EMS transports from a 911 request for patients whose pain score decreased during EMS encounter.                    | Outcome  | Patient Experience                   |
-| Trauma-04          | Percentage of EMS responses from a 911 request for patients meeting CDC trauma criteria transported to a trauma center.          | Process  | Clinical Process – Effectiveness     |
-| Trauma-08          | Percentage of EMS transports from a 911 request for trauma patients with documented GCS, systolic BP, and respiratory rate.      | Process  | Clinical Process – Effectiveness     |
-| Trauma-14          | Percentage of EMS transports from a 911 request for patients meeting Step 1 or Step 2 field triage criteria with a pre-arrival trauma alert. | Process  | Clinical Process – Effectiveness | :heavy_check_mark:                   |
-| TTR-01             | Percentage of EMS responses from a 911 request for non-transported patients with documented vital signs.                          | Process  | Clinical Process – Effectiveness     |
+```{r nemsqa-table, echo = FALSE, message = FALSE}
+ems_measures <- tibble::tibble(
+  `Measure ID` = c("Airway-01", "Airway-05", "Airway-18", "Asthma-01", "Hypoglycemia-01", "Respiratory-01", 
+                   "Respiratory-02", "Pediatrics-03b", "Safety-01", "Safety-02", "Safety-04", "Seizure-02", 
+                   "Stroke-01", "Syncope-01", "TBI-01", "Trauma-01", "Trauma-03", "Trauma-04", "Trauma-08", 
+                   "Trauma-14", "TTR-01"),
+  Description = c(
+    "Percentage of EMS responses from a 911 request with successful advanced airway placement on first attempt without hypotension or hypoxia in peri-intubation period.",
+    "Percentage of intubation procedures from a 911 request in which adequate patient oxygen levels were achieved prior to intubation.",
+    "Percentage of successful advanced airway procedures from a 911 request in which waveform capnography is used for confirmation and monitoring.",
+    "Percentage of EMS responses from a 911 request for asthma patients receiving an aerosolized beta agonist.",
+    "Percentage of EMS responses from a 911 request for symptomatic hypoglycemia patients who receive treatment to correct hypoglycemia.",
+    "Percentage of EMS responses from a 911 request for respiratory distress patients with a respiratory assessment.",
+    "Percentage of EMS responses from a 911 request for patients with hypoxia receiving oxygen.",
+    "Percentage of EMS responses from a 911 request for patients <18 years receiving a weight-based medication with documented weight in kg or length-based estimate.",
+    "Percentage of EMS responses from a 911 request without lights and sirens.",
+    "Percentage of EMS transports from a 911 request without lights and sirens during patient transport.",
+    "Percentage of EMS transports from a 911 or interfacility request for patients <8 years transported with a pediatric restraint device.",
+    "Percentage of EMS responses from a 911 request for patients with status epilepticus who received benzodiazepine.",
+    "Percentage of EMS responses from a 911 request for suspected stroke patients who had a stroke assessment.",
+    "Percentage of EMS responses from a 911 request for syncope patients with a 12-lead (or greater) ECG performed.",
+    "Percentage of EMS transports from a 911 request for suspected TBI patients with documented oxygen level, ETCO2, and systolic BP.",
+    "Percentage of EMS responses from a 911 request for injury patients assessed for pain.",
+    "Percentage of EMS transports from a 911 request for patients whose pain score decreased during EMS encounter.",
+    "Percentage of EMS responses from a 911 request for patients meeting CDC trauma criteria transported to a trauma center.",
+    "Percentage of EMS transports from a 911 request for trauma patients with documented GCS, systolic BP, and respiratory rate.",
+    "Percentage of EMS transports from a 911 request for patients meeting Step 1 or Step 2 field triage criteria with a pre-arrival trauma alert.",
+    "Percentage of EMS responses from a 911 request for non-transported patients with documented vital signs."
+  ),
+  Type = c("Outcome", "Process", "Process", "Process", "Process", "Process", "Process", "Process", "Process",
+           "Process", "Process", "Process", "Process", "Process", "Process", "Process", "Outcome", "Process",
+           "Process", "Process", "Process"),
+  `National Quality Strategy Domain` = c("Clinical Process – Effectiveness", "Patient Safety", 
+                                         "Clinical Process – Effectiveness", "Clinical Process – Effectiveness", 
+                                         "Clinical Process – Effectiveness", "Clinical Process – Effectiveness", 
+                                         "Clinical Process – Effectiveness", "Patient Safety", 
+                                         "Patient Safety", "Patient Safety", "Patient Safety", 
+                                         "Clinical Process – Effectiveness", "Clinical Process – Effectiveness", 
+                                         "Clinical Process – Effectiveness", "Clinical Process – Effectiveness", 
+                                         "Patient Experience", "Patient Experience", 
+                                         "Clinical Process – Effectiveness", "Clinical Process – Effectiveness", 
+                                         "Clinical Process – Effectiveness", "Clinical Process – Effectiveness")
+)
 
----
+knitr::kable(ems_measures, caption = "EMS Clinical Performance Measures")
+
+```
 
 # Resources
 

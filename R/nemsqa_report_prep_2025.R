@@ -20,27 +20,27 @@
 #                   ))
 
 # load packages ----
-library(tidyverse)
-library(traumar)
-library(devtools)
-library(remotes)
-library(nemsqar)
-library(janitor)
-library(gt)
-library(gtsummary)
-library(gtExtras)
-library(zipcodeR)
-library(naniar)
-library(ggrepel)
-library(devtools)
-library(renv)
-library(roxygen2)
-library(roxygen2md)
-library(extrafont)
-library(fontawesome)
-library(patchwork)
-library(systemfonts)
-library(showtext)
+# library(tidyverse)
+# library(traumar)
+# library(devtools)
+# library(remotes)
+# library(nemsqar)
+# library(janitor)
+# library(gt)
+# library(gtsummary)
+# library(gtExtras)
+# library(zipcodeR)
+# library(naniar)
+# library(ggrepel)
+# library(devtools)
+# library(renv)
+# library(roxygen2)
+# library(roxygen2md)
+# library(extrafont)
+# library(fontawesome)
+# library(patchwork)
+# library(systemfonts)
+# library(showtext)
 
 # showtext setup ----
 
@@ -725,9 +725,12 @@ prepare_map_data <- function(type = c("county", "state", "zcta")) {
     "tl_2024_us_zcta520.shp"
   }
 
+  # Get the secure shapefile path
+  shapefile_path <- Sys.getenv("SHAPE_FILE_PATH")
+
   # Construct the full file path to the shapefile
   filepath <- file.path(
-    "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Analytics/BEMTS/NEMSQA Report/2025/shapefiles",
+    shapefile_path,
     type,
     file
   )
@@ -765,10 +768,13 @@ prepare_map_data <- function(type = c("county", "state", "zcta")) {
   return(shapefile)
 }
 
+# Get the secure county data file path
+county_data_path <- Sys.getenv("COUNTY_FILE_PATH")
+
 # get location data
 # Iowa county data
 county_data <- readxl::read_excel(
-  path = "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Desktop/Analytics/Analytics Builds/GitHub/Reference-Files/IA Counties, Regions.xlsx"
+  path = county_data_path
 )
 
 # essential service counties
@@ -778,9 +784,7 @@ essential_counties <- county_data |>
 
 # helper object for manipulations
 location <-
-  readxl::read_excel(
-    "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Desktop/Analytics/Analytics Builds/GitHub/Reference-Files/IA Counties, Regions.xlsx"
-  ) |>
+  county_data |>
   dplyr::select(
     County,
     `Region: Preparedness`,
@@ -1343,12 +1347,12 @@ prepare_results_statistical_file <- function(df) {
 # (NEMSQA) table and year, reading the corresponding CSV file into R. If no file
 # location is provided, it defaults to a predefined directory.
 import_nemsqa_data <- function(location = NULL, table, year) {
+  # Secure the base path
+  base_path <- Sys.getenv("BASE_FILE_PATH")
+
   # If no file location is provided, set the default directory.
   if (is.null(location)) {
-    location <- file.path(
-      "C:/Users/nfoss0/OneDrive - State of Iowa HHS",
-      "Analytics/BEMTS/EMS DATA FOR ALL SCRIPTS/NEMSQA/tables/"
-    )
+    location <- base_path
   }
 
   # Construct the full file path using the expected filename format.
@@ -1368,12 +1372,14 @@ import_nemsqa_statistical_files <- function(location = NULL, measure) {
   # Create a temporary environment to manage variable assignment.
   temp_env <- new.env()
 
+  # Get the secure output file path
+  output_file_path <- Sys.getenv("OUTPUT_FILE_PATH")
+
   with(temp_env, {
     # If no file location is provided, use the default directory.
     if (is.null(location)) {
       location <- file.path(
-        "C:/Users/nfoss0/OneDrive - State of Iowa HHS",
-        "Analytics/BEMTS/NEMSQA Report/2025/output/"
+        output_file_path
       )
     }
 
@@ -2157,9 +2163,13 @@ export_nemsqa_data <- function(
   # Validate folder selection
   folder <- match.arg(folder, choices = c("population", "result"))
 
+  # Get the secure file path
+  output_file_path <- Sys.getenv("OUTPUT_FILE_PATH")
+
   # Construct the output directory path
   output_path <- glue::glue(
-    "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Analytics/BEMTS/NEMSQA Report/2025/output/{measure}/{folder}"
+    output_file_path,
+    "{measure}/{folder}"
   )
 
   # Ensure the output directory exists
@@ -2253,10 +2263,13 @@ export_nemsqa_gt <- function(
     )
   }
 
+  # Get the secure file path
+  output_file_path <- Sys.getenv("OUTPUT_FILE_PATH")
+
   # Set default output path if not provided
   if (is.null(path)) {
     path <- file.path(
-      "C:/Users/nfoss0/OneDrive - State of Iowa HHS/Analytics/BEMTS/NEMSQA Report/2025/output",
+      output_file_path,
       measure,
       folder
     )
@@ -2287,7 +2300,7 @@ export_nemsqa_gt <- function(
   gt::gtsave(gt_object, filename = filename, path = path, ...)
 
   # Confirmation message
-  cli::cli_inform(c("✔" = "GT table successfully exported: {full_path}"))
+  cli::cli_inform(c("v" = "GT table successfully exported: {full_path}"))
 }
 
 ###_____________________________________________________________________________

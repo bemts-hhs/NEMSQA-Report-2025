@@ -23,7 +23,10 @@ import_nemsqa_statistical_files(measure = "Respiratory-01")
 # generate the population gt table
 respiratory_01_pop_gt <- respiratory_01_pop_years |>
   prepare_population_statistical_file() |>
-  population_statistical_file_gt(measure = "Respiratory-01", fig_dim = c(8, 40)) |>
+  population_statistical_file_gt(
+    measure = "Respiratory-01",
+    fig_dim = c(8, 40)
+  ) |>
   tab_style_hhs(
     message_text = "* Indicates masked data with n < 6. Population Trend horizontal lines indicate the arithmetic mean for that population group.",
     border_cols = -1,
@@ -52,10 +55,12 @@ respiratory_01_results_gt <- respiratory_01_result_year |>
   prepare_results_statistical_file() |>
   results_statistical_file_gt(groups = c("INCIDENT_YEAR")) |>
   # Add various source notes with icons from fontawesome
-  gt::tab_source_note(source_note = gt::md(paste0(
-    fontawesome::fa("note-sticky"),
-    " * Indicates masked data with n < 6."
-  ))) |>
+  gt::tab_source_note(
+    source_note = gt::md(paste0(
+      fontawesome::fa("note-sticky"),
+      " * Indicates masked data with n < 6."
+    ))
+  ) |>
   tab_style_hhs(
     message_text = "`Comparison` indicates the result with 95% confidence intervals.",
     border_cols = c(-1, -2),
@@ -82,9 +87,11 @@ export_nemsqa_gt(
 iowa_counties_sf <- prepare_map_data()
 
 # summarize performance statewide over the timeframe of interest
-respiratory_01_result_counties_map <- results_to_county_map(df = respiratory_01_result_counties,
-                                                            add_text = FALSE,
-                                                            format = "percent")
+respiratory_01_result_counties_map <- results_to_county_map(
+  df = respiratory_01_result_counties,
+  add_text = FALSE,
+  format = "percent"
+)
 
 # save the plot
 ggplot2::ggsave(

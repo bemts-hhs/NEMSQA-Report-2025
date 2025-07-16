@@ -469,6 +469,44 @@ respiratory_01_result_overall <- nemsqar::respiratory_01(
   correct = TRUE
 )
 
+# regions and years
+respiratory_01_result_services <- nemsqar::respiratory_01(
+  df = NULL,
+  patient_scene_table = patient_scene_table,
+  response_table = response_table,
+  situation_table = situation_table,
+  vitals_table = vitals_table,
+  erecord_01_col = FACT_INCIDENT_PK,
+  incident_date_col = INCIDENT_DATE,
+  patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+  epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+  epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+  eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+  esituation_11_col = SITUATION_PROVIDER_PRIMARY_IMPRESSION_CODE_AND_DESCRIPTION_E_SITUATION_11,
+  esituation_12_col = SITUATION_PROVIDER_SECONDARY_IMPRESSION_DESCRIPTION_AND_CODE_E_SITUATION_12,
+  evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
+  evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+  confidence_interval = TRUE,
+  method = "w",
+  conf.level = 0.95,
+  correct = TRUE,
+  .by = c(INCIDENT_YEAR, AGENCY_NAME_D_AGENCY_03)
+) |>
+  tidyr::complete(
+    INCIDENT_YEAR,
+    AGENCY_NAME_D_AGENCY_03,
+    measure,
+    pop,
+    fill = list(
+      numerator = 0,
+      denominator = 0,
+      prop = NA_real_,
+      prop_label = NA_character_,
+      lower_ci = NA_real_,
+      upper_ci = NA_real_
+    )
+  )
+
 ### EXPORT =====================================================================
 
 ### population exports #########################################################

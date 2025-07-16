@@ -1413,6 +1413,69 @@ import_nemsqa_statistical_files <- function(location = NULL, measure) {
   }) # End of with(temp_env)
 }
 
+# Load and clean multiple NEMSQA data files in parallel.
+#
+# This function imports and cleans multiple years or file chunks for a given NEMSQA table
+# using parallel processing. Each year/chunk is handled independently in parallel worker
+# processes, and the results are combined into a single tibble upon completion.
+#
+# Arguments:
+# - table: character string indicating the table name to import.
+# - years: character or numeric vector of year or chunk identifiers.
+# - cores: optional integer specifying how many cores to use (defaults to physical cores - 4).
+#
+# Requirements:
+# - The import_nemsqa_data() and clean_names_dates_data() functions must be defined
+#   in the global environment.
+# - The cli package is used for progress messaging.
+load_nemsqa_parallel <- function(table, years, cores = NULL) {
+  # Use default: all physical cores minus 4 for safety, unless specified
+  if (is.null(cores)) {
+    cores <- max(1, parallel::detectCores(logical = FALSE) - 4)
+  }
+
+  cli::cli_h1("Parallel NEMSQA Data Import")
+  cli::cli_alert_info("Table: {.val {table}}")
+  cli::cli_alert_info("Years/chunks: {.val {paste(years, collapse = ', ')}}")
+  cli::cli_alert_info("Workers: {.val {cores}}")
+
+  # Define a function to run in each parallel worker
+  load_and_clean <- function(yr) {
+    dat <- import_nemsqa_data(table = table, year = yr)
+    clean_names_dates_data(dat)
+  }
+
+  # Initialize the parallel cluster
+  cl <- parallel::makeCluster(cores)
+
+  # Export required functions and variables to workers
+  parallel::clusterExport(
+    cl,
+    varlist = c("import_nemsqa_data", "clean_names_dates_data", "table"),
+    envir = .GlobalEnv
+  )
+
+  cli::cli_alert_info("Starting parallel import and cleaning...")
+
+  # Process years/chunks in parallel, one at a time to show progress
+  cleaned_list <- vector("list", length(years))
+  for (i in seq_along(years)) {
+    yr <- years[[i]]
+    cleaned_list[[i]] <- parallel::parLapply(cl, list(yr), load_and_clean)[[1]]
+    cli::cli_text(c("v" = "Completed year/chunk {.val {yr}}"))
+  }
+
+  # Shut down the cluster
+  parallel::stopCluster(cl)
+  cli::cli_alert_info("Combining results...")
+
+  result <- dplyr::bind_rows(cleaned_list)
+
+  cli::cli_alert_success("Finished. Returning combined tibble.")
+  return(result)
+}
+
+
 ### DATA VISUALIZATION FACILITIES ==============================================
 
 #_____________________________________________________________________________

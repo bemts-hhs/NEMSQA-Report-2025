@@ -558,7 +558,7 @@ hypoglycemia_01_result_overall <- nemsqar::hypoglycemia_01(
   correct = TRUE
 )
 
-# regions and years
+# services
 hypoglycemia_01_result_services <- nemsqar::hypoglycemia_01(
   df = NULL,
   patient_scene_table = patient_scene_table,

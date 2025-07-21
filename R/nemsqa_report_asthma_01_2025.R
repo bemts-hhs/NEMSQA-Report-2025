@@ -548,7 +548,7 @@ asthma_01_result_regions_years <- nemsqar::asthma_01(
     )
   )
 
-# regions and years
+# services
 asthma_01_result_services <- nemsqar::asthma_01(
   df = NULL,
   patient_scene_table = patient_scene_table,

@@ -488,7 +488,7 @@ respiratory_02_result_overall <- nemsqar::respiratory_02(
   correct = TRUE
 )
 
-# regions and years
+# services
 respiratory_02_result_services <- nemsqar::respiratory_02(
   df = NULL,
   patient_scene_table = patient_scene_table,

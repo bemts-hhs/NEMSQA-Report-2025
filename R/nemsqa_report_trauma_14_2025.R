@@ -842,6 +842,66 @@ trauma_14_result_overall <- nemsqar::trauma_14(
   correct = TRUE
 )
 
+# services
+trauma_14_result_services <- nemsqar::trauma_14(
+  df = NULL,
+  patient_scene_table = patient_scene_table,
+  response_table = response_table,
+  situation_table = situation_table,
+  vitals_table = vitals_table,
+  exam_table = exam_table,
+  procedures_table = procedures_table,
+  injury_table = injury_table,
+  disposition_table = disposition_table,
+  erecord_01_col = FACT_INCIDENT_PK,
+  incident_date_col = INCIDENT_DATE,
+  patient_DOB_col = PATIENT_DATE_OF_BIRTH_E_PATIENT_17,
+  epatient_15_col = PATIENT_AGE_E_PATIENT_15,
+  epatient_16_col = PATIENT_AGE_UNITS_E_PATIENT_16,
+  esituation_02_col = SITUATION_POSSIBLE_INJURY_WITH_CODE_E_SITUATION_02,
+  eresponse_05_col = RESPONSE_TYPE_OF_SERVICE_REQUESTED_WITH_CODE_E_RESPONSE_05,
+  eresponse_10_col = RESPONSE_TYPE_OF_SCENE_DELAY_LIST_E_RESPONSE_10,
+  transport_disposition_col = c(
+    DISPOSITION_INCIDENT_PATIENT_DISPOSITION_WITH_CODE_3_4_E_DISPOSITION_12_3_5_IT_DISPOSITION_112,
+    TRANSPORT_DISPOSITION_3_4_IT_DISPOSITION_102_3_5_E_DISPOSITION_30
+  ),
+  edisposition_24_col = DISPOSITION_TEAM_PRE_ARRIVAL_ALERT_E_DISPOSITION_24,
+  evitals_06_col = VITALS_SYSTOLIC_BLOOD_PRESSURE_SBP_E_VITALS_06,
+  evitals_10_col = VITALS_HEART_RATE_E_VITALS_10,
+  evitals_12_col = VITALS_PULSE_OXIMETRY_E_VITALS_12,
+  evitals_14_col = VITALS_RESPIRATORY_RATE_E_VITALS_14,
+  evitals_15_col = VITALS_RESPIRATORY_EFFORT_E_VITALS_15,
+  evitals_21_col = VITALS_GLASGOW_COMA_SCORE_GCS_MOTOR_E_VITALS_21,
+  eexam_16_col = PATIENT_EXTREMITY_ASSESSMENT_FINDINGS_LIST_E_EXAM_16,
+  eexam_20_col = PATIENT_NEUROLOGICAL_ASSESSMENT_FINDINGS_LIST_E_EXAM_20,
+  eexam_23_col = PATIENT_LUNG_ASSESSMENT_FINDINGS_LIST_3_4_IT_EXAM_100_3_5_E_EXAM_23,
+  eexam_25_col = PATIENT_CHEST_EXCLUSIVE_ASSESSMENT_FINDINGS_LIST_3_4_IT_EXAM_102_3_5_E_EXAM_25,
+  eprocedures_03_col = PATIENT_ATTEMPTED_PROCEDURE_DESCRIPTIONS_AND_CODES_LIST_E_PROCEDURES_03,
+  einjury_01_col = INJURY_CAUSE_OF_INJURY_DESCRIPTION_AND_CODE_LIST_E_INJURY_01,
+  einjury_03_col = INJURY_TRAUMA_CENTER_TRIAGE_CRITERIA_STEPS_1_AND_2_LIST_E_INJURY_03,
+  einjury_04_col = INJURY_VEHICULAR_PEDESTRIAN_OR_OTHER_INJURY_RISK_FACTOR_TRIAGE_CRITERIA_STEPS_3_AND_4_LIST_E_INJURY_04,
+  einjury_09_col = INJURY_HEIGHT_OF_FALL_IN_FEET_E_INJURY_09,
+  confidence_interval = TRUE,
+  method = "w",
+  conf.level = 0.95,
+  correct = TRUE,
+  .by = c(INCIDENT_YEAR, AGENCY_NAME_D_AGENCY_03)
+) |>
+  tidyr::complete(
+    INCIDENT_YEAR,
+    AGENCY_NAME_D_AGENCY_03,
+    measure,
+    pop,
+    fill = list(
+      numerator = 0,
+      denominator = 0,
+      prop = NA_real_,
+      prop_label = NA_character_,
+      lower_ci = NA_real_,
+      upper_ci = NA_real_
+    )
+  )
+
 ### EXPORT =====================================================================
 
 ### population exports #########################################################

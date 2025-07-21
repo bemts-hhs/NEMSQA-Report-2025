@@ -1462,7 +1462,7 @@ load_nemsqa_parallel <- function(table, years, cores = NULL) {
   for (i in seq_along(years)) {
     yr <- years[[i]]
     cleaned_list[[i]] <- parallel::parLapply(cl, list(yr), load_and_clean)[[1]]
-    cli::cli_text(c("v" = "Completed year/chunk {.val {yr}}"))
+    cli::cli_alert_success("Completed year/chunk {.val {yr}}")
   }
 
   # Shut down the cluster

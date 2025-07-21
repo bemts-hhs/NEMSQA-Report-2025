@@ -131,29 +131,32 @@ medications_table <- medications_rbind |>
   clean_names_dates_data()
 
 ### patient/scene tables #########################################################
+
+# parallel process
 patient_scene_table <- load_nemsqa_parallel(
   table = "patient_scene",
   years = 2021:2024,
   cores = 10
 )
 
-# given that patient and scene data are 1-1 relationship, join those tables
-patient_scene_2021 <- import_nemsqa_data(table = "patient_scene", year = 2021)
-patient_scene_2022 <- import_nemsqa_data(table = "patient_scene", year = 2022)
-patient_scene_2023 <- import_nemsqa_data(table = "patient_scene", year = 2023)
-patient_scene_2024 <- import_nemsqa_data(table = "patient_scene", year = 2024)
-
-# bind rows for the patient/scene table
-patient_scene_rbind <- dplyr::bind_rows(
-  patient_scene_2021,
-  patient_scene_2022,
-  patient_scene_2023,
-  patient_scene_2024
-)
-
-# set up patient/scene table for manipulations
-patient_scene_clean <- patient_scene_rbind |>
-  clean_names_dates_data()
+# Keep sequential processing for posterity
+# # given that patient and scene data are 1-1 relationship, join those tables
+# patient_scene_2021 <- import_nemsqa_data(table = "patient_scene", year = 2021)
+# patient_scene_2022 <- import_nemsqa_data(table = "patient_scene", year = 2022)
+# patient_scene_2023 <- import_nemsqa_data(table = "patient_scene", year = 2023)
+# patient_scene_2024 <- import_nemsqa_data(table = "patient_scene", year = 2024)
+#
+# # bind rows for the patient/scene table
+# patient_scene_rbind <- dplyr::bind_rows(
+#   patient_scene_2021,
+#   patient_scene_2022,
+#   patient_scene_2023,
+#   patient_scene_2024
+# )
+#
+# # set up patient/scene table for manipulations
+# patient_scene_clean <- patient_scene_rbind |>
+#   clean_names_dates_data()
 
 # final manipulations on the patient/scene table
 # handle multiple issues with location using external data sources with
@@ -214,7 +217,6 @@ patient_scene_table <- patient_scene_clean |>
     external_county = county_data$County,
     external_region = county_data$`Region: Preparedness`
   )
-
 
 ### response tables ##############################################################
 response_2021 <- import_nemsqa_data(table = "response", year = 2021)

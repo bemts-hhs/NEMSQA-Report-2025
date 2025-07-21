@@ -469,7 +469,7 @@ respiratory_01_result_overall <- nemsqar::respiratory_01(
   correct = TRUE
 )
 
-# regions and years
+# services
 respiratory_01_result_services <- nemsqar::respiratory_01(
   df = NULL,
   patient_scene_table = patient_scene_table,
